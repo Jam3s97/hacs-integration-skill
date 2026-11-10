@@ -1,6 +1,4 @@
-# Skills
-
-## hacs-integration
+# hacs-integration skill
 
 An [Agent Skill](https://agentskills.io) for creating, building and reviewing
 Home Assistant custom integrations distributed through HACS, and for getting
@@ -8,11 +6,11 @@ them into the HACS default store.
 
 | File | Purpose |
 | --- | --- |
-| `hacs-integration/SKILL.md` | Entry point: create / build / review / publish workflows |
-| `hacs-integration/references/hacs-requirements.md` | HACS publishing rules, `hacs.json`, `manifest.json`, brands, workflows, check → fix table, hacs/default PR procedure |
-| `hacs-integration/references/ha-best-practices.md` | Home Assistant developer guidance and the quality-scale checklist |
-| `hacs-integration/references/common-pr-feedback.md` | What closed hacs/default submissions were actually stopped for |
-| `hacs-integration/scripts/hacs_preflight.py` | Offline checker for a local integration repository (Python 3.10+, no dependencies) |
+| `skills/hacs-integration/SKILL.md` | Entry point: create / build / review / publish workflows |
+| `skills/hacs-integration/references/hacs-requirements.md` | HACS publishing rules, `hacs.json`, `manifest.json`, brands, workflows, check → fix table, hacs/default PR procedure |
+| `skills/hacs-integration/references/ha-best-practices.md` | Home Assistant developer guidance and the quality-scale checklist |
+| `skills/hacs-integration/references/common-pr-feedback.md` | What closed hacs/default submissions were actually stopped for |
+| `skills/hacs-integration/scripts/hacs_preflight.py` | Offline checker for a local integration repository (Python 3.10+, no dependencies) |
 
 ### Install
 
