@@ -103,6 +103,24 @@ CODE_PATTERNS = (
      "loads JavaScript from a CDN at runtime; ship frontend code in the release"),
     (r"https?://[^\s\"']*\b(dev|staging|sandbox|test)\b[.\-][^\s\"']*", "INFO",
      "URL looks like a development/staging host; use the production endpoint"),
+    (r"\bZoneInfo\(", "WARN",
+     "ZoneInfo() reads tzdata from disk; use dt_util.get_default_time_zone(), "
+     "await dt_util.async_get_time_zone(name) or datetime.UTC"),
+    (r"requires_auth\s*=\s*False", "WARN",
+     "HTTP view without authentication; require auth and check "
+     "request['hass_user'].is_admin for anything that writes"),
+    (r"(?i)_LOGGER\.\w+\([^)\n]*(password|passwd|token|api_?key|secret)\b[^)\n]*%s", "WARN",
+     "log call appears to include a credential; never log secrets, even partially"),
+    (r"core\.config_entries|\.storage/", "INFO",
+     "references .storage paths directly; use the config-entries API and "
+     "helpers.storage.Store"),
+    (r"\bdate\.today\(\)|datetime\.now\(\s*\)", "INFO",
+     "uses the system clock; use dt_util.now() / dt_util.utcnow()"),
+    (r"except ImportError\s*:\s*\n\s*pass", "WARN",
+     "swallowed ImportError hides a missing requirement"),
+    (r"lovelace[^\n]*resources|ResourceStorageCollection", "INFO",
+     "writes Lovelace resources; prefer frontend.add_extra_js_url so nothing "
+     "is left behind on uninstall"),
     (r"automations\.yaml|scripts\.yaml|scenes\.yaml|configuration\.yaml", "INFO",
      "touches the user's YAML configuration files; integrations should not "
      "rewrite user config"),
@@ -258,6 +276,28 @@ def check_translations(integ: Path, manifest: dict) -> None:
         load_json(en)
 
 
+# (regex over integration code, minimum (year, month), label)
+FLOORS = (
+    (r"ClimateEntityFeature\.TURN_O(N|FF)", (2024, 2), "ClimateEntityFeature.TURN_ON/OFF"),
+    (r"StaticPathConfig|async_register_static_paths", (2024, 7), "async_register_static_paths"),
+    (r"FanEntityFeature\.TURN_O(N|FF)", (2024, 8), "FanEntityFeature.TURN_ON/OFF"),
+    (r"_get_reauth_entry\(|_get_reconfigure_entry\(|data_updates\s*=", (2024, 11),
+     "_get_reauth_entry / data_updates"),
+    (r"helpers\.service_info\.", (2025, 2), "homeassistant.helpers.service_info"),
+)
+
+
+def _tracked(root: Path, path: Path) -> bool:
+    """True if path has files tracked by git (or git is unavailable)."""
+    try:
+        import subprocess
+        out = subprocess.run(["git", "-C", str(root), "ls-files", "--", str(path)],
+                             capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return True
+    return out.returncode != 0 or bool(out.stdout.strip())
+
+
 def check_extras(root: Path, integ: Path, hacs: dict, manifest: dict) -> None:
     """Checks drawn from recurring hacs/default review feedback."""
     for name in ("www", "dist"):
@@ -271,6 +311,58 @@ def check_extras(root: Path, integ: Path, hacs: dict, manifest: dict) -> None:
     if (integ / "brand").is_dir() and (not match or (int(match[1]), int(match[2])) < (2026, 3)):
         report("WARN", "local brand/ images are only served from Home Assistant "
                        "2026.3.0; set hacs.json `homeassistant` to 2026.3.0 or later")
+    py = {p: p.read_text(encoding="utf-8", errors="replace") for p in integ.rglob("*.py")}
+    code = "\n".join(py.values())
+    have = (int(match[1]), int(match[2])) if match else None
+    if have is None:
+        report("WARN", "hacs.json: `homeassistant` minimum version is not set; "
+                       "reviewers check it against the APIs the code uses")
+    for pattern, need, label in FLOORS:
+        if re.search(pattern, code) and (have is None or have < need):
+            report("WARN", f"code uses {label}, which needs Home Assistant "
+                           f"{need[0]}.{need[1]}; hacs.json `homeassistant` is "
+                           f"{floor or 'unset'}")
+    if "ConfigEntryAuthFailed" in code and "async_step_reauth" not in code:
+        report("WARN", "raises ConfigEntryAuthFailed but the config flow has no "
+                       "async_step_reauth / reauth_confirm step")
+    if "async_step_reauth" in code:
+        en = integ / "translations" / "en.json"
+        text = en.read_text(encoding="utf-8", errors="replace") if en.is_file() else ""
+        for key in ("reauth_confirm", "reauth_successful"):
+            if key not in text:
+                report("WARN", f"translations/en.json has no `{key}` string for the reauth flow")
+    services = integ / "services.yaml"
+    if services.is_file():
+        for name in re.findall(r"^([a-z0-9_]+):", services.read_text(encoding="utf-8",
+                                                  errors="replace"), re.M):
+            if name not in code:
+                report("WARN", f"services.yaml declares `{name}` but no code references it")
+    for js in integ.rglob("*.js"):
+        text = js.read_text(encoding="utf-8", errors="replace")
+        if len(text) < 2_000_000 and re.search(r"innerHTML\s*\+?=\s*[^;]*\$\{", text):
+            report("WARN", f"{js.relative_to(integ)}: template values written to innerHTML; "
+                           "escape every interpolated value or use textContent")
+    for path in integ.rglob("*"):
+        if path.is_dir() and path.name == "__pycache__" and _tracked(root, path):
+            report("WARN", f"{path.relative_to(root)} is committed; remove it and gitignore it")
+        elif path.suffix == ".py" and path.name != "__init__.py" and path.stat().st_size == 0:
+            report("INFO", f"{path.relative_to(integ)} is an empty module")
+    if (root / "manifest.json").is_file() and not hacs.get("content_in_root"):
+        report("WARN", "stray manifest.json at the repository root; only "
+                       "custom_components/<domain>/manifest.json is used")
+    if hacs.get("content_in_root"):
+        report("WARN", "hacs.json: content_in_root is set; reviewers ask for the "
+                       "standard custom_components/<domain>/ layout instead")
+    for req in manifest.get("requirements", []):
+        if "git+" in req or "://" in req:
+            report("WARN", f"manifest.json: requirement `{req}` is a URL; publish "
+                           "to PyPI and pin a version")
+    readme = next((p for p in root.iterdir() if p.name.lower().startswith("readme")), None)
+    if readme and re.search(r"(?i)custom repositor", readme.read_text(encoding="utf-8",
+                                                                      errors="replace")):
+        report("INFO", "README describes adding a custom repository; once in the "
+                       "default store, lead with searching for it in HACS")
+
     version = str(manifest.get("version", ""))
     if re.search(r"(a|b|rc|alpha|beta|dev)\d*$", version, re.I):
         report("WARN", f"manifest.json: version `{version}` is a pre-release; "
@@ -313,9 +405,14 @@ def check_repo_files(root: Path) -> None:
             report("WARN", "README is very short; document install, setup and entities")
         if "blueprint" in body.lower() and "integration_blueprint" in body:
             report("ERROR", "README still contains blueprint template text")
-    if not any((root / n).is_file() for n in ("LICENSE", "LICENSE.md", "LICENSE.txt", "COPYING")):
-        report("ERROR", "LICENSE file is missing (must be an OSI-approved licence "
-                        "GitHub can identify)")
+    lic = next((root / n for n in ("LICENSE", "LICENSE.md") if (root / n).is_file()), None)
+    if lic is None:
+        other = [p.name for p in root.iterdir() if p.name.lower().startswith(("licen", "copying"))]
+        hint = f" (found {other[0]}; rename it to LICENSE)" if other else ""
+        report("ERROR", "LICENSE or LICENSE.md is missing from the repository root" + hint +
+                        "; it must be an OSI-approved licence GitHub can identify")
+    elif lic.stat().st_size < 200:
+        report("ERROR", f"{lic.name} is empty or truncated; it must contain the licence text")
 
 
 def scan_code(integ: Path) -> None:

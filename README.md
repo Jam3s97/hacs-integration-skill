@@ -10,6 +10,7 @@ them into the HACS default store.
 | `skills/hacs-integration/references/hacs-requirements.md` | HACS publishing rules, `hacs.json`, `manifest.json`, brands, workflows, check → fix table, hacs/default PR procedure |
 | `skills/hacs-integration/references/ha-best-practices.md` | Home Assistant developer guidance and the quality-scale checklist |
 | `skills/hacs-integration/references/common-pr-feedback.md` | What closed hacs/default submissions were actually stopped for |
+| `skills/hacs-integration/references/review-rounds.md` | Code-level findings from reviews of submissions that were merged, and how to respond to a review |
 | `skills/hacs-integration/scripts/hacs_preflight.py` | Offline checker for a local integration repository (Python 3.10+, no dependencies) |
 
 ### Install

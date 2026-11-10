@@ -7,7 +7,9 @@ submissions from 2025–2026 (PR numbers in brackets are examples, not a
 complete list). Roughly one in four integration submissions closed since
 mid-2026 was closed unmerged, and many of those were resubmitted, which resets
 a wait measured in months. Use this file as a review checklist: every item is
-something a real submission was stopped for.
+something a real submission was stopped for. For the code-level findings on
+submissions that went on to be merged, and how to answer a review, see
+`review-rounds.md`.
 
 Review today is more than the automated checks. Maintainers read the
 integration's code and its latest **release**, so code-level problems block

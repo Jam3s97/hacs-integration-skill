@@ -24,6 +24,7 @@ them.
 | Add features or fix code in an existing one | [Build](#build) |
 | Know whether it is good / ready, or why a check fails | [Review](#review) |
 | Get listed in the HACS default store | [Publish](#publish) |
+| Answer a maintainer's review on their hacs/default PR | [Respond to a review](#respond-to-a-review) |
 
 ## Create
 
@@ -57,6 +58,9 @@ validation workflows.
    `name`, then alphabetical.
 6. Replace the blueprint's sample API client, entities and the
    `unique_id=slugify(username)` placeholder with real ones (see Build).
+   The blueprint's coordinator raises `ConfigEntryAuthFailed` but its config
+   flow has no reauth step; add `async_step_reauth` / `reauth_confirm` and
+   their strings, or reviewers will ask for it.
 7. Add `custom_components/<domain>/brand/icon.png` (and ideally `logo.png`),
    then **delete `ignore: brands`** from `.github/workflows/validate.yml`.
 8. Replace the README with real install, configuration and entity
@@ -111,9 +115,17 @@ file:line and the concrete fix for each.
    description, topics, issues enabled, licence detected, not archived, a
    full **release** (not just a tag) made *after* the last green workflow
    run, and both workflows green with no `ignore`.
-4. Compare against
+4. Go through [references/review-rounds.md](references/review-rounds.md),
+   the code-level findings maintainers raised on submissions that were later
+   merged (auth and reauth, exceptions, blocking calls, privacy, access
+   control, frontend escaping, device safety, minimum-version floor). This is
+   the closest thing to the reviewer's own checklist.
+5. Compare against
    [references/common-pr-feedback.md](references/common-pr-feedback.md), the
    catalogue of what gets hacs/default submissions closed or drafted.
+
+Review the code as it is in the latest release tag, not only the working
+tree: that is what HACS validates and what maintainers read.
 
 If hassfest or the HACS action is failing, map the message to its fix with the
 table in `references/hacs-requirements.md` before changing anything.
@@ -141,9 +153,22 @@ repository. Never open the hacs/default PR, tick the checklist, or write the
 PR text for a user unless they ask, and never tick a box that is not true:
 misrepresenting the checklist gets the PR closed.
 
+## Respond to a review
+
+When the user has change requests on their hacs/default PR, follow
+[references/review-rounds.md](references/review-rounds.md#responding-to-a-review).
+The rule that saves the most time: fix the whole class of problem, not the
+quoted line. Reviews that ran to four or five rounds did so because the same
+kind of issue (an unescaped value, a logged secret, a blocking call) was still
+present elsewhere. Then bump the version, publish a new non-pre-release
+release, update the PR branch and its three links, and reply once with an
+item-by-item summary. Draft the reply for the user to post; do not post on
+their behalf unless asked.
+
 ## Things this skill should refuse to paper over
 
 - Adding `ignore:` to the HACS action, or disabling hassfest, to get green.
+- Moving or re-creating a git tag or release to hide a change.
 - Using a domain that shadows a core integration, or publishing an alpha/beta
   copy of a core integration as a default.
 - Copying another project's brand assets or code without a compatible licence.
