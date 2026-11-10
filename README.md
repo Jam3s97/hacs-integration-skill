@@ -45,3 +45,7 @@ November 2026 from <https://hacs.xyz/docs/publish/start>,
 <https://developers.home-assistant.io>,
 <https://github.com/ludeeus/integration_blueprint> and closed pull requests in
 <https://github.com/hacs/default>.
+
+## Licence
+
+[MIT](LICENSE)
