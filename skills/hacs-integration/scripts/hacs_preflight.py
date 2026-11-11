@@ -388,6 +388,29 @@ def check_extras(root: Path, integ: Path, hacs: dict, manifest: dict) -> None:
                        f"git tag `{tag}`; bump the manifest before tagging a release")
 
 
+def check_dev_setup(root: Path) -> None:
+    """The development files that ludeeus/integration_blueprint provides."""
+    missing = []
+    if not ((root / ".devcontainer.json").is_file() or (root / ".devcontainer").is_dir()):
+        missing.append("a devcontainer")
+    if not (root / "scripts" / "develop").is_file():
+        missing.append("scripts/develop")
+    if not (root / "scripts" / "lint").is_file():
+        missing.append("scripts/lint")
+    pyproject = root / "pyproject.toml"
+    has_ruff = any((root / n).is_file() for n in (".ruff.toml", "ruff.toml")) or (
+        pyproject.is_file() and "[tool.ruff" in pyproject.read_text(encoding="utf-8",
+                                                                    errors="replace"))
+    if not has_ruff:
+        missing.append("a ruff config")
+    if len(missing) >= 3:
+        report("WARN", "no development setup (" + ", ".join(missing) + "); new "
+                       "integrations should start from ludeeus/integration_blueprint, "
+                       "which provides a local Home Assistant to test in")
+    elif missing:
+        report("INFO", "development setup is missing " + ", ".join(missing))
+
+
 def check_workflows(root: Path) -> None:
     wf_dir = root / ".github" / "workflows"
     text = ""
@@ -453,6 +476,7 @@ def main() -> int:
     hacs = check_hacs_json(root)
     check_repo_files(root)
     check_workflows(root)
+    check_dev_setup(root)
     integ = find_integration(root, hacs)
     if integ:
         manifest = check_manifest(integ)
