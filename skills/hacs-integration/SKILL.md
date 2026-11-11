@@ -60,10 +60,24 @@ and nothing else was asked, default to Review.
 
 ## Create
 
-Start from <https://github.com/ludeeus/integration_blueprint>. It already has
-the layout HACS expects, a config flow, a `DataUpdateCoordinator`, typed
-`entry.runtime_data`, ruff config, a devcontainer, and the hassfest and HACS
-validation workflows.
+**Every new integration starts from the blueprint**,
+<https://github.com/ludeeus/integration_blueprint>. Clone it; do not write the
+files by hand, and do not recreate its files from memory. This holds for a
+small, simple or throwaway "test" integration too: being quick or small is
+not a reason to skip it. Hand-written scaffolds leave out the parts the user
+cannot easily add later: the devcontainer and `scripts/develop` (a local Home
+Assistant to test in), `scripts/setup` and `scripts/lint`, the ruff config,
+the issue templates, and the hassfest and HACS validation workflows.
+
+The only exceptions:
+
+- The user says, in this conversation, that they do not want the blueprint.
+- The clone fails (no network, host blocked). Stop and tell the user. Offer
+  to retry, or to hand-write the scaffold with their agreement, listing what
+  will be missing. Never fall back silently.
+
+Do the steps in order. If you skip or change any step, say so at the time
+and why; do not leave it for the user to discover.
 
 1. Check it should exist. Search Home Assistant core
    (<https://www.home-assistant.io/integrations/>) and the HACS store for the
@@ -86,6 +100,12 @@ validation workflows.
 
    "Use this template" on GitHub, or
    `git clone --depth 1 https://github.com/ludeeus/integration_blueprint <repo> && rm -rf <repo>/.git && git -C <repo> init`.
+
+   Before going on, confirm the clone landed: `.devcontainer.json`,
+   `scripts/develop`, `scripts/lint`, `scripts/setup`, `.ruff.toml`,
+   `.github/workflows/validate.yml`, `.github/workflows/lint.yml` and
+   `custom_components/integration_blueprint/` must all exist. Keep all of
+   them; later steps rename and edit, they do not delete.
 4. Rename everything. Directory `custom_components/integration_blueprint` →
    `custom_components/<domain>`; then replace `integration_blueprint`,
    `IntegrationBlueprint`, `Blueprint`, `Integration blueprint` and `ludeeus`
@@ -106,8 +126,20 @@ validation workflows.
    then **delete `ignore: brands`** from `.github/workflows/validate.yml`.
 8. Replace the README with real install, configuration and entity
    documentation. Keep the LICENSE (MIT) or swap for another OSI licence.
-9. Run `scripts/setup`, `scripts/lint`, and `scripts/develop` to load it in a
-   local Home Assistant; then run the pre-flight script (see Review).
+9. Verify, and run each of these rather than assuming:
+   - `scripts/setup`, then `scripts/lint` (ruff format and check). Fix what
+     it reports.
+   - The pre-flight script (see Review). It reports an integration that is
+     missing the blueprint's development files.
+   - `scripts/develop` starts a local Home Assistant with the integration
+     loaded. It is long-running and usually needs the devcontainer, so ask
+     the user to run it (in VS Code: "Reopen in Container", then
+     `scripts/develop`) and add the integration from Settings → Devices &
+     services. Do not claim the integration works until someone has.
+10. Finish with a short report: that the blueprint was used (or why not),
+    each step above as done, skipped or failed, the pre-flight result, and
+    what the user still has to do themselves (create the GitHub repository,
+    run `scripts/develop`, add real brand images, test against the device).
 
 ## Build
 

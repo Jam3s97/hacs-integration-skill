@@ -67,6 +67,11 @@ def make_repo(root: Path) -> Path:
     (integ / "brand").mkdir()
     (root / ".github" / "workflows").mkdir(parents=True)
     (root / "tests").mkdir()
+    (root / "scripts").mkdir()
+    (root / "scripts" / "develop").write_text("#!/usr/bin/env bash\n")
+    (root / "scripts" / "lint").write_text("#!/usr/bin/env bash\n")
+    (root / ".devcontainer.json").write_text("{}")
+    (root / ".ruff.toml").write_text("line-length = 100\n")
     (root / "hacs.json").write_text(
         json.dumps({"name": "Awesome", "homeassistant": "2026.3.0", "country": "NO"})
     )
@@ -216,6 +221,17 @@ class PreflightTest(unittest.TestCase):
         (self.root / "www").mkdir()
         (self.root / "www" / "card.js").write_text("// card\n")
         self.assert_flags("WARN", "www/ at the repository root")
+
+    def test_no_dev_setup(self) -> None:
+        (self.root / ".devcontainer.json").unlink()
+        (self.root / ".ruff.toml").unlink()
+        (self.root / "scripts" / "develop").unlink()
+        (self.root / "scripts" / "lint").unlink()
+        self.assert_flags("WARN", "ludeeus/integration_blueprint")
+
+    def test_partial_dev_setup(self) -> None:
+        (self.root / ".devcontainer.json").unlink()
+        self.assert_flags("INFO", "missing a devcontainer")
 
     def test_two_integrations(self) -> None:
         (self.root / "custom_components" / "other").mkdir()
