@@ -1,6 +1,6 @@
 ---
 name: hacs-integration
-description: Create, build and review Home Assistant custom integrations that are distributed through HACS, and prepare them for inclusion in the HACS default store (hacs/default). Use when the user wants to scaffold a new custom integration (custom_components), add or fix config flows, coordinators, entities, manifest.json, hacs.json, brand images, hassfest or HACS action workflows, review an integration against Home Assistant best practice, fix a failing HACS/hassfest check, or open or repair a pull request to hacs/default. Not for dashboards, cards, themes, AppDaemon or other HACS categories.
+description: Create, build and review Home Assistant custom integrations that are distributed through HACS, and prepare them for inclusion in the HACS default store (hacs/default). Use when the user wants to scaffold a new custom integration (custom_components), add or fix config flows, coordinators, entities, manifest.json, hacs.json, brand images, hassfest or HACS action workflows, review an integration against Home Assistant best practice, fix a failing HACS/hassfest check, or prepare for, or work through review feedback on, a pull request to hacs/default. Not for dashboards, cards, themes, AppDaemon or other HACS categories.
 ---
 
 # HACS integration skill
@@ -16,6 +16,32 @@ year, so when a reference file here disagrees with the live docs
 <https://developers.home-assistant.io>), the live docs win; say so and follow
 them.
 
+## The human stays in the loop
+
+Home Assistant and HACS are Open Home Foundation projects, and the
+foundation's AI policy (<https://developers.home-assistant.io/docs/ai_policy>)
+applies to what gets submitted to them. AI may be used as a tool; the person
+is responsible for the contribution and must understand it. In practice:
+
+- **Explain, don't just patch.** For every non-trivial change, say what was
+  wrong, why it matters and what the fix does, so the user can explain their
+  own code to a maintainer. Encourage them to read the diff before releasing.
+- **Never act as the user on hacs/default.** Do not open the pull request,
+  write or post comments, reply to reviews, or tick checklist boxes there.
+  The policy bans autonomous agents and says not to use AI to generate
+  answers to maintainers' questions; such PRs and comments are closed or
+  hidden.
+- **The user writes their own words.** The PR description and review replies
+  are theirs. Help by listing the facts they need (what changed, which
+  release, which links) and by checking a draft they wrote for accuracy,
+  missing items or grammar. Do not hand them finished prose to paste.
+- **Tested by a person.** Before a release, the user should have run the
+  integration against the real device or service. Do not describe untested
+  behaviour as working.
+
+If the user asks for something on the wrong side of this, say what the
+policy is and offer the allowed form of help.
+
 ## Pick the mode
 
 | The user wants to… | Do |
@@ -23,8 +49,8 @@ them.
 | Start a new integration | [Create](#create) |
 | Add features or fix code in an existing one | [Build](#build) |
 | Know whether it is good / ready, or why a check fails | [Review](#review) |
-| Get listed in the HACS default store | [Publish](#publish) |
-| Answer a maintainer's review on their hacs/default PR | [Respond to a review](#respond-to-a-review) |
+| Get ready to be listed in the HACS default store | [Publish](#publish) |
+| Work through a maintainer's review on their hacs/default PR | [Respond to a review](#respond-to-a-review) |
 
 When invoked as a command, the first word of the argument selects the mode:
 `create`, `build`, `review`, `publish` or `respond` (for example
@@ -160,13 +186,18 @@ In short:
    (case-insensitive) position, one repository per PR.
 4. Fill in the PR template completely, with working links to the release and
    to the two passing workflow runs. Leave "allow edits by maintainers" on.
+   The user does this themselves, in the GitHub web UI, using the template
+   as provided.
 5. Do not request reviews, ping maintainers or bump the PR. Review takes
    months; a drafted PR means "fix, then mark ready".
 
 The person submitting must be the owner or a major contributor of the
-repository. Never open the hacs/default PR, tick the checklist, or write the
-PR text for a user unless they ask, and never tick a box that is not true:
-misrepresenting the checklist gets the PR closed.
+repository, and must open the PR themselves (see
+[The human stays in the loop](#the-human-stays-in-the-loop)). Your part is
+everything up to that point: getting the checks green, preparing the one-line
+change to the `integration` file on their fork if they want, giving them the
+three links, and verifying each checklist statement is true before they tick
+it. Misrepresenting the checklist gets the PR closed.
 
 ## Respond to a review
 
@@ -176,14 +207,19 @@ The rule that saves the most time: fix the whole class of problem, not the
 quoted line. Reviews that ran to four or five rounds did so because the same
 kind of issue (an unescaped value, a logged secret, a blocking call) was still
 present elsewhere. Then bump the version, publish a new non-pre-release
-release, update the PR branch and its three links, and reply once with an
-item-by-item summary. Draft the reply for the user to post; do not post on
-their behalf unless asked.
+release, and update the PR branch and its three links.
+
+Walk the user through each item so they understand the problem and the fix.
+The reply to the maintainer is theirs to write: give them a factual list of
+what changed per item and the release that contains it, and review what they
+write if they ask. Do not draft the reply for them and never post it.
 
 ## Things this skill should refuse to paper over
 
 - Adding `ignore:` to the HACS action, or disabling hassfest, to get green.
 - Moving or re-creating a git tag or release to hide a change.
+- Opening the hacs/default PR, or writing or posting replies to maintainers,
+  on the user's behalf.
 - Using a domain that shadows a core integration, or publishing an alpha/beta
   copy of a core integration as a default.
 - Copying another project's brand assets or code without a compatible licence.

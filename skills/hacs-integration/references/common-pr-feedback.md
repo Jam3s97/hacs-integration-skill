@@ -241,6 +241,13 @@ release.
 
 - Requesting a review, pinging maintainers, or "please recheck" comments.
   The template warns the PR will be closed.
+- AI-written submissions the author has not reviewed or cannot explain.
+  The Open Home Foundation AI policy
+  (<https://developers.home-assistant.io/docs/ai_policy>) allows AI as a
+  tool but requires a human who understands the work: PRs that look like
+  unreviewed AI output or that bypass the template are closed, autonomous
+  agents are not allowed, AI-generated replies to maintainers are not
+  allowed, and repeated violations can lead to a block.
 - Ticking checklist boxes that are not true (action failing, `ignore` still
   present, no release after the passing run).
 - Fixing only the first item of a multi-item review, or only the exact line
