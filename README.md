@@ -1,5 +1,7 @@
 # hacs-integration skill
 
+[![CI](https://github.com/Jam3s97/hacs-integration-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/Jam3s97/hacs-integration-skill/actions/workflows/ci.yml)
+
 An [Agent Skill](https://agentskills.io) that helps you create, build and
 review Home Assistant custom integrations distributed through
 [HACS](https://hacs.xyz), and get them accepted into the HACS default store.
@@ -33,10 +35,34 @@ Please read and test what it produces before you release it.
 ## Install
 
 You need [Claude Code](https://claude.com/claude-code) (the terminal app or
-the VS Code extension). Run these on your own computer, in a terminal. In
-VS Code, open one with **Terminal → New Terminal**.
+the VS Code extension).
 
-### For all your projects (recommended)
+### As a plugin (recommended)
+
+In a Claude Code chat, type:
+
+```
+/plugin install hacs-integration --marketplace Jam3s97/hacs-integration-skill
+```
+
+That installs it for all your projects. On Claude Code older than 2.1.275,
+use two steps instead:
+
+```
+/plugin marketplace add Jam3s97/hacs-integration-skill
+/plugin install hacs-integration@hacs-integration-skill
+```
+
+Installed this way, the command is `/hacs-integration:hacs-integration`
+(plugin name, then skill name). To update later, run
+`/plugin marketplace update hacs-integration-skill` followed by
+`/plugin update hacs-integration@hacs-integration-skill`.
+
+### By copying the folder
+
+Run these on your own computer, in a terminal. In VS Code, open one with
+**Terminal → New Terminal**. Installed this way, the command is the shorter
+`/hacs-integration`.
 
 macOS, Linux or WSL:
 
@@ -70,10 +96,11 @@ the repository.
 
 Start a **new** Claude Code chat (a chat that was already open will not see
 the skill) and type `/hacs-integration`. It should appear in the command
-list. If it does not, check that this file exists:
+list. If it does not: for a plugin install, run `/plugin` and look under
+Installed; for a copied folder, check that this file exists:
 `~/.claude/skills/hacs-integration/SKILL.md`.
 
-### Updating
+### Updating a copied folder
 
 ```bash
 cd hacs-integration-skill && git pull
@@ -93,6 +120,10 @@ Open your integration's folder in Claude Code (for a brand new integration,
 see [Starting a new integration](#starting-a-new-integration)), then either
 type the command or just ask in plain language; the skill loads itself when the
 request is about a HACS integration.
+
+The commands below are for a copied-folder install. If you installed the
+plugin, type `/hacs-integration:hacs-integration` in place of
+`/hacs-integration`.
 
 | You want to | Type | Or just ask |
 | --- | --- | --- |
@@ -147,6 +178,10 @@ nothing else:
 python3 ~/.claude/skills/hacs-integration/scripts/hacs_preflight.py /path/to/your-integration
 ```
 
+If you installed the plugin, there is no copy at that path; run it from a clone
+of this repository instead
+(`python3 skills/hacs-integration/scripts/hacs_preflight.py /path/to/your-integration`).
+
 It prints `ERROR`, `WARN` and `INFO` lines. Exit code 1 means at least one
 blocking problem was found, so it can be used in CI.
 
@@ -160,6 +195,8 @@ blocking problem was found, so it can be used in CI.
 | `skills/hacs-integration/references/common-pr-feedback.md` | What closed hacs/default submissions were stopped for |
 | `skills/hacs-integration/references/review-rounds.md` | What reviewers asked for on submissions that were merged, and how to respond to a review |
 | `skills/hacs-integration/scripts/hacs_preflight.py` | The offline checker |
+| `.claude-plugin/` | Plugin and marketplace manifests for the one-line install |
+| `tests/` | Tests for the checker and the skill's structure, run by CI |
 
 ## Keeping it current
 

@@ -1,0 +1,12 @@
+{
+  "name": "hacs-integration-skill",
+  "description": "An Agent Skill for Home Assistant custom integrations distributed through HACS.",
+  "owner": { "name": "Jam3s97", "url": "https://github.com/Jam3s97" },
+  "plugins": [
+    {
+      "name": "hacs-integration",
+      "source": "./",
+      "description": "Create, build and review Home Assistant custom integrations distributed through HACS, with a focus on quality and security."
+    }
+  ]
+}
