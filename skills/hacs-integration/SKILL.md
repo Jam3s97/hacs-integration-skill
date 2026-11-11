@@ -26,6 +26,12 @@ them.
 | Get listed in the HACS default store | [Publish](#publish) |
 | Answer a maintainer's review on their hacs/default PR | [Respond to a review](#respond-to-a-review) |
 
+When invoked as a command, the first word of the argument selects the mode:
+`create`, `build`, `review`, `publish` or `respond` (for example
+`/hacs-integration review`). With no argument, or anything else, infer the
+mode from the request; if the working directory already holds an integration
+and nothing else was asked, default to Review.
+
 ## Create
 
 Start from <https://github.com/ludeeus/integration_blueprint>. It already has
