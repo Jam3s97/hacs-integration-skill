@@ -153,8 +153,9 @@ references were written in November 2026 from:
 - pull requests in <https://github.com/hacs/default>
 
 If the skill and the live documentation disagree, the documentation wins.
-⭐ If you find this useful pease give the Repo a Star 
 Issues and pull requests are welcome.
+
+⭐ If you find this useful, please give the repo a star.
 
 ## Licence
 
