@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -270,7 +271,9 @@ def check_translations(integ: Path, manifest: dict) -> None:
         return
     strings = integ / "strings.json"
     if not en.is_file():
-        hint = " (strings.json alone is not loaded for custom integrations)" if strings.is_file() else ""
+        hint = ""
+        if strings.is_file():
+            hint = " (strings.json alone is not loaded for custom integrations)"
         report("ERROR", f"translations/en.json is missing{hint}")
     else:
         load_json(en)
@@ -287,15 +290,27 @@ FLOORS = (
 )
 
 
-def _tracked(root: Path, path: Path) -> bool:
-    """True if path has files tracked by git (or git is unavailable)."""
+def _git(root: Path, *args: str) -> str | None:
+    """Run git in root; return stdout, or None if git is unavailable or fails."""
     try:
-        import subprocess
-        out = subprocess.run(["git", "-C", str(root), "ls-files", "--", str(path)],
-                             capture_output=True, text=True, timeout=10)
+        out = subprocess.run(["git", "-C", str(root), *args],
+                             capture_output=True, text=True, timeout=10, check=False)
     except (OSError, subprocess.SubprocessError):
+        return None
+    return out.stdout.strip() if out.returncode == 0 else None
+
+
+def _is_git_root(root: Path) -> bool:
+    """True if root is the top level of its own git repository."""
+    top = _git(root, "rev-parse", "--show-toplevel")
+    return bool(top) and Path(top).resolve() == root
+
+
+def _tracked(root: Path, path: Path) -> bool:
+    """True if path has files tracked by git (or root is not a git repository)."""
+    if not _is_git_root(root):
         return True
-    return out.returncode != 0 or bool(out.stdout.strip())
+    return bool(_git(root, "ls-files", "--", str(path)))
 
 
 def check_extras(root: Path, integ: Path, hacs: dict, manifest: dict) -> None:
@@ -367,12 +382,7 @@ def check_extras(root: Path, integ: Path, hacs: dict, manifest: dict) -> None:
     if re.search(r"(a|b|rc|alpha|beta|dev)\d*$", version, re.I):
         report("WARN", f"manifest.json: version `{version}` is a pre-release; "
                        "the release submitted to hacs/default should be a stable one")
-    try:
-        import subprocess
-        tag = subprocess.run(["git", "-C", str(root), "describe", "--tags", "--abbrev=0"],
-                             capture_output=True, text=True, timeout=10).stdout.strip()
-    except (OSError, subprocess.SubprocessError):
-        tag = ""
+    tag = _git(root, "describe", "--tags", "--abbrev=0") if _is_git_root(root) else ""
     if tag and version and tag.lstrip("vV.") != version.lstrip("vV."):
         report("WARN", f"manifest.json version `{version}` does not match the latest "
                        f"git tag `{tag}`; bump the manifest before tagging a release")
