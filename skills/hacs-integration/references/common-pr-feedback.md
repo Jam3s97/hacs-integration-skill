@@ -3,8 +3,7 @@
 Compiled in November 2026 from closed pull requests in
 <https://github.com/hacs/default>: search counts across the closed PRs, and a
 close reading of the maintainer and bot comments on 48 closed integration
-submissions from 2025–2026 (PR numbers in brackets are examples, not a
-complete list). Roughly one in four integration submissions closed since
+submissions from 2025–2026. Roughly one in four integration submissions closed since
 mid-2026 was closed unmerged, and many of those were resubmitted, which resets
 a wait measured in months. Use this file as a review checklist: every item is
 something a real submission was stopped for. For the code-level findings on
@@ -32,16 +31,16 @@ inclusion just as a failed check does.
 
 | Feedback | Fix |
 | --- | --- |
-| "Your branch seems out of date. Please update your branch with the latest changes from the base branch." / merge conflict on the `integration` file [#8246, #9334, #9519, #7315] | Merge or rebase `hacs/default` `master` into the PR branch. Expect to do this more than once during the wait. |
-| "a store addition should always be `+1/-0`" [#8246] | After resolving a conflict, check the Files tab shows one added line and nothing removed. A sloppy rebase that deletes a neighbour's entry is rejected. |
-| "Limit your PR to a single repository change." [#7247, #8781] | One repository per PR; do not batch your integrations. Also triggered by a rebase that drags other entries into the diff. |
-| "Add required repository links to the PR description… Found 1 link(s), but 3 are required for integration repositories." [#12344, #13045, #13051, #13187, #13345] | Release link, HACS action run link, hassfest run link, all three, in the template's Links section. **The single most common bot closure in the sample (9 of 48).** The bot closes the PR rather than waiting, and it re-checks after review rounds, so do not trim the links when editing the description. |
-| "Remove "HACS" from your repository name." [#13746, #11671] | Rename the repository (e.g. `ha-foo`, not `hacs-foo`), then update the submitted line to the new exact name. |
-| PR auto-closed for a missing or altered template [#10361, #12791, #12933] | Keep the template's headings and checklist intact; fill it in rather than replacing it. When creating the PR by API or CLI, check the body rendered properly (one submission had literal `\n` sequences). Use a new branch name for a resubmission. |
-| "The submitted name … does not match what GitHub returns for the repository" [#4205] | Use the exact case of `owner/repo` as GitHub displays it. |
-| Entry appended at the end / file not sorted / an unrelated entry moved [#7753] | Insert one line alphabetically (case-insensitive); touch nothing else. |
+| "Your branch seems out of date. Please update your branch with the latest changes from the base branch." / merge conflict on the `integration` file | Merge or rebase `hacs/default` `master` into the PR branch. Expect to do this more than once during the wait. |
+| "a store addition should always be `+1/-0`" | After resolving a conflict, check the Files tab shows one added line and nothing removed. A sloppy rebase that deletes a neighbour's entry is rejected. |
+| "Limit your PR to a single repository change." | One repository per PR; do not batch your integrations. Also triggered by a rebase that drags other entries into the diff. |
+| "Add required repository links to the PR description… Found 1 link(s), but 3 are required for integration repositories." | Release link, HACS action run link, hassfest run link, all three, in the template's Links section. **The single most common bot closure in the sample (9 of 48).** The bot closes the PR rather than waiting, and it re-checks after review rounds, so do not trim the links when editing the description. |
+| "Remove "HACS" from your repository name." | Rename the repository (e.g. `ha-foo`, not `hacs-foo`), then update the submitted line to the new exact name. |
+| PR auto-closed for a missing or altered template | Keep the template's headings and checklist intact; fill it in rather than replacing it. When creating the PR by API or CLI, check the body rendered properly (one submission had literal `\n` sequences). Use a new branch name for a resubmission. |
+| "The submitted name … does not match what GitHub returns for the repository" | Use the exact case of `owner/repo` as GitHub displays it. |
+| Entry appended at the end / file not sorted / an unrelated entry moved | Insert one line alphabetically (case-insensitive); touch nothing else. |
 | "The PR is not editable by HACS maintainers" | Fork from a personal account and leave "Allow edits by maintainers" ticked. |
-| Stale: "Because there hasn't been any activity on this PR for quite some time now, I've decided to close it for being stale." [#6649, #7315] | Respond to review within a few weeks. After fixing, mark the PR ready for review; a silent fix in your own repo is invisible. |
+| Stale: "Because there hasn't been any activity on this PR for quite some time now, I've decided to close it for being stale." | Respond to review within a few weeks. After fixing, mark the PR ready for review; a silent fix in your own repo is invisible. |
 
 Old "changes requested" reviews from the bot can linger after a rebase.
 Opening a fresh PR is what authors usually end up doing; it is cleaner to
@@ -49,10 +48,10 @@ keep the branch current so the reviews never appear.
 
 ## 2. Eligibility and identity
 
-- **Domain collisions.** "Two integrations cannot share a domain" [#6379];
+- **Domain collisions.** "Two integrations cannot share a domain";
   Home Assistant loads one integration per domain, so a domain already used by
   another repository in the default store is a hard block, even if that
-  repository is abandoned [#8781, #7315]. Before submitting, search the
+  repository is abandoned. Before submitting, search the
   default list (`https://data-v2.hacs.xyz/integration/data.json`) and core for
   the domain. Fix: pick a unique domain (rename directory, manifest, `DOMAIN`,
   translations, services), release, and open a new PR. Taking over an
@@ -61,40 +60,37 @@ keep the branch current so the reviews never appear.
 - **Duplicates of existing work.** The most common maintainer close reason in
   the sample (7 of the 28 most recent closures read). Not accepted: an integration for devices or a
   service already covered by a core integration ("this is a duplicate of a
-  core integration for the catalog") [#11255, #12555, #10307]; a fork or
-  derivative of an integration already in the default store [#9884]; a
-  second implementation of the same protocol or API as an existing default
-  [#10109, #10072]; add-on quirks or patches for a core integration
-  [#10347]. The advice each time was to contribute upstream. Before
+  core integration for the catalog"); a fork or
+  derivative of an integration already in the default store; a
+  second implementation of the same protocol or API as an existing default; add-on quirks or patches for a core integration. The advice each time was to contribute upstream. Before
   building, search core and the HACS store for the device, brand and API,
   and be ready to say in the README what this integration does that the
   existing one cannot.
 - **Core overlap.** Alpha/beta builds of core integrations, and integrations
-  that override a core domain, are not accepted as defaults [#4049]. They stay
+  that override a core domain, are not accepted as defaults. They stay
   custom repositories. Core also gains integrations: a domain that was free
-  when you started can collide after a Home Assistant release [#13016].
-- **Archived or unreachable repository** at review time [#9855, #9465].
+  when you started can collide after a Home Assistant release.
+- **Archived or unreachable repository** at review time.
 - **Out of scope.** An alternative store installing code from other forges
-  was declined as something the default catalog cannot take [#11671].
+  was declined as something the default catalog cannot take.
 - **Unobtainable prerequisites.** Setup needing vendor keys ordinary users
-  cannot get; a documented, authorised route was requested [#11590].
+  cannot get; a documented, authorised route was requested.
 - **Not functional yet.** "The integration as released does not create
-  anything in Home Assistant yet" [#8573]: an entry that sets up no entities,
+  anything in Home Assistant yet": an entry that sets up no entities,
   services or other user-visible function is not ready. "The default catalog
   is meant for repositories that are functional for the people who install
   them from the store."
 - **Approach.** An integration whose core idea is rewriting the user's
   configuration files or driving non-public Home Assistant internals was
-  closed on approach, not code quality [#8246].
+  closed on approach, not code quality.
 - **Ownership.** Submitter must be the owner or a major contributor.
 - **Duplicates.** Repository already in HACS, or a second PR opened for the
-  same repository while one is open [#10505]. Keep one PR.
+  same repository while one is open. Keep one PR.
 - **Licence.** "This needs a `LICENSE` file (or `LICENSE.md`) at the
-  repository root" [#8781]; it must be an OSI licence GitHub recognises.
+  repository root"; it must be an OSI licence GitHub recognises.
 - **Provenance.** A fork of an unlicensed upstream cannot simply add MIT:
-  the licence was "not theirs to grant" [#12094]. Reverse-engineered code
-  documented as derived from a private vendor binary raised IP questions
-  [#11590]. Get upstream's agreement or be able to state it is a clean
+  the licence was "not theirs to grant". Reverse-engineered code
+  documented as derived from a private vendor binary raised IP questions. Get upstream's agreement or be able to state it is a clean
   rewrite.
 
 ## 3. Release and manifest consistency
@@ -102,29 +98,29 @@ keep the branch current so the reviews never appear.
 Reviewers inspect the latest release, not the default branch.
 
 - `manifest.json` `version` differs from the release tag (1.1.0 vs v1.1.1;
-  "0.1.0" vs `v.1.0.3`) [#8712, #8573]. Bump the manifest, then tag.
+  "0.1.0" vs `v.1.0.3`). Bump the manifest, then tag.
 - Pre-release version string on a normal release (`1.3.0-beta` on a
-  non-prerelease tag) [#9519]. Either mark the GitHub release as a
+  non-prerelease tag). Either mark the GitHub release as a
   pre-release or use a stable version.
 - **Replacing or moving git tags.** "Replacing existing ones is a way to hide
-  things and makes versions unstable." [#4228, #4205]. This got submissions
+  things and makes versions unstable.". This got submissions
   refused outright. Never delete and recreate a tag or release; publish a new
   version number.
 - No `translations/en.json` in the release (only `de.json`, or only
-  `strings.json`) [#9519, #10564].
+  `strings.json`).
 - `hacs.json` `homeassistant` minimum lower than the APIs the code uses
   (options-flow changes need 2024.12; `StaticPathConfig` needs 2024.7; local
-  `brand/` needs 2026.3) [#8246, #10564, #9519]. Raise the floor to the oldest
+  `brand/` needs 2026.3). Raise the floor to the oldest
   release the code really runs on.
 - `documentation` / `issue_tracker` pointing at another repository, a
-  misspelt owner, or the blueprint [#12344, #8573].
-- `codeowners` naming a GitHub account that does not exist [#9519].
-- Missing `integration_type` [#8573].
+  misspelt owner, or the blueprint.
+- `codeowners` naming a GitHub account that does not exist.
+- Missing `integration_type`.
 - hassfest: "Using component http but it's not in 'dependencies' or
-  'after_dependencies'" [#13051]. Any core component the code imports or
+  'after_dependencies'". Any core component the code imports or
   uses (`http`, `frontend`, `websocket_api`, `bluetooth`, `mqtt`…) must be
   listed in `dependencies` or `after_dependencies`.
-- A requirement declared in `manifest.json` but never imported [#9519], or
+- A requirement declared in `manifest.json` but never imported, or
   the reverse.
 - Fix pushed to the branch but no new release cut: the checks and the
   reviewer still see the old release.
@@ -132,110 +128,104 @@ Reviewers inspect the latest release, not the default branch.
 ## 4. Brands
 
 "Actions are still failing" on the `brands` check was a routine close reason
-while assets had to be merged into home-assistant/brands first [#5363].
-Still seen: no `brand/` directory in the release [#12094], and
-`ignore: brands` left in the workflow from the blueprint [#12222].
+while assets had to be merged into home-assistant/brands first.
+Still seen: no `brand/` directory in the release, and
+`ignore: brands` left in the workflow from the blueprint.
 Today: put `icon.png` (256×256) and `icon@2x.png` (512×512) in
 `custom_components/<domain>/brand/`, set
 `hacs.json` `homeassistant` to `2026.3.0` or later (older Home Assistant
-versions do not serve in-tree images [#9519]), remove `ignore: brands`,
+versions do not serve in-tree images), remove `ignore: brands`,
 release.
 
 ## 5. Code problems reviewers flag
 
 - **Blocking I/O on the event loop**: file reads/writes, ARP table reads,
-  parsing a multi-megabyte XML file every hour [#8246, #10505, #12344].
+  parsing a multi-megabyte XML file every hour.
   "Run it in the executor instead:
   `await self.hass.async_add_executor_job(read_local_arp)`".
 - Less obvious blocking calls: constructing `ZoneInfo(name)` reads tzdata
-  from disk; use `await dt_util.async_get_time_zone(name)` [#13045].
-  Re-compressing archives on the loop [#11671].
+  from disk; use `await dt_util.async_get_time_zone(name)`.
+  Re-compressing archives on the loop.
 - **Config flow and setup disagree**: an options flow saves host/port to
   `entry.options` while setup reads only `entry.data`, so changes never
-  apply [#12199]. Read options first with a fallback to data, or update
+  apply. Read options first with a fallback to data, or update
   `entry.data` via a reconfigure flow.
 - **Advertised features without an implementation**:
-  `CoverEntityFeature.SET_POSITION` with no `async_set_cover_position`
-  [#12199]. Only set feature flags for methods that exist.
+  `CoverEntityFeature.SET_POSITION` with no `async_set_cover_position`. Only set feature flags for methods that exist.
 - **Unhandled `None`**: `async_turn_on` without `rgb_color` passing `None`
-  into the device call and raising `TypeError` [#12199]. Fall back to the
+  into the device call and raising `TypeError`. Fall back to the
   last known value.
 - **Unverified writes to hardware**: enum values and setpoints marked
   "TODO verify", emergency-stop switches never tested. "Writing unconfirmed
-  values to a physical heat pump is not something we can ship." [#12222]
+  values to a physical heat pump is not something we can ship."
   Ship only controls that have been tested on a real device; leave the rest
   out or read-only.
-- Logging calls whose placeholders and arguments do not match [#12199].
+- Logging calls whose placeholders and arguments do not match.
 - **Code that cannot work**: a service that "raises `NameError` on every
-  call" [#9519]; service fields documented in `services.yaml` but rejected by
+  call"; service fields documented in `services.yaml` but rejected by
   the schema with "extra keys not allowed". Exercise every service and every
   config-flow path once before releasing.
 - **Unguarded `entry.runtime_data` access** from services or websocket
-  handlers when the entry is not loaded [#8246].
-- **Aggressive polling** such as a 5-second loop against a vendor cloud
-  [#8712].
+  handlers when the entry is not loaded.
+- **Aggressive polling** such as a 5-second loop against a vendor cloud.
 - **Services that should return data** but only fire events or log: use
-  `supports_response` [#10564].
+  `supports_response`.
 - **Private or internal APIs** of Home Assistant used instead of public
-  helpers [#8246].
+  helpers.
 - Duplicate or leftover files in the release (repeated images, unused
-  modules) [#8712].
+  modules).
 - README leading with manual "add custom repository" steps; once in the
   default store "users can just search for it in HACS, so please lead with
-  that" [#12344] (non-blocking).
+  that" (non-blocking).
 
 ## 6. Security findings
 
 - **Shared credentials in source**: "ships a hardcoded, shared TMDB API key
-  baked into the source for everyone… have each user supply their own"
-  [#7810].
-- **Password shown in clear** in the config flow; use a password selector
-  [#8712].
-- **Vendor development/staging host** hardcoded as the API URL [#8712].
+  baked into the source for everyone… have each user supply their own".
+- **Password shown in clear** in the config flow; use a password selector.
+- **Vendor development/staging host** hardcoded as the API URL.
 - **Unescaped values in bundled card HTML** (XSS): names, attributes, card
-  config, colours, sizes, `id` attributes, formatted dates all need escaping
-  [#10564, #12344]. This took three or four review rounds each time because
+  config, colours, sizes, `id` attributes, formatted dates all need escaping. This took three or four review rounds each time because
   authors fixed only the lines quoted; audit every `innerHTML` and template
   literal in one pass.
 - **WebSocket commands without an admin check**: add
   `@websocket_api.require_admin` and validate inputs (e.g.
-  `ipaddress.ip_address()`) [#12344].
-- Service inputs such as `color` and `icon` not validated in the schema
-  [#10564].
+  `ipaddress.ip_address()`).
+- Service inputs such as `color` and `icon` not validated in the schema.
 - **Credentials sent to the wrong host**: an `Authorization` header attached
-  to whatever URL a response links to [#11671]. Send tokens only to the
+  to whatever URL a response links to. Send tokens only to the
   host they belong to.
 - **Unencrypted transport** (weakly hashed password, cleartext streams) not
-  disclosed; reviewers asked for a plain statement in the README [#11590].
-- Telemetry must be opt-in and documented [#13324].
+  disclosed; reviewers asked for a plain statement in the README.
+- Telemetry must be opt-in and documented.
 
 ## 7. Overreach
 
 - Writing to device or entity registry entries owned by other integrations:
   "Please limit registry writes to devices and entities this integration
-  created." [#12344]
+  created."
 - Reading another integration's stored tokens: "Please only read and write
-  your own `.storage/<domain>/` path." [#10505]
+  your own `.storage/<domain>/` path."
 - Removing or replacing Lovelace resources it did not create: "leave
   resources you did not create alone and keep everything under your own
-  … namespace." [#10505]
+  … namespace."
 - Rewriting `automations.yaml`, `scripts.yaml`, `scenes.yaml` or stored
-  dashboards [#8246].
+  dashboards.
 - Deleting, hiding or migrating entities that belong to a core integration,
-  or monkey-patching its classes process-wide [#10347, #12555].
+  or monkey-patching its classes process-wide.
 - Cleanup code that deletes entities by a broad pattern rather than by its
-  own config entry [#12344].
+  own config entry.
 
 ## 8. Bundled frontend
 
 - Cards kept in `www/` at the repository root never reach users: "HACS only
   installs files under `custom_components/<domain>/` for integration
-  entries" [#6649]. Bundle them in the integration and register with
+  entries". Bundle them in the integration and register with
   `async_register_static_paths` + `add_extra_js_url`.
 - Loading the card from a CDN: "Code that runs in the user's frontend should
-  ship in the release and be served locally." [#10505]
+  ship in the release and be served locally."
 - Copying the card into `config/www/` and registering a `/local/` resource:
-  "drop the copy and the `/local/` registration." [#10505]
+  "drop the copy and the `/local/` registration."
 
 ## 9. Process mistakes
 
@@ -252,7 +242,7 @@ release.
   present, no release after the passing run).
 - Fixing only the first item of a multi-item review, or only the exact line
   quoted, then asking for re-review: "The second item from last time is still
-  open" [#8712].
+  open".
 - Closing and reopening a new PR to jump the queue or clear reviews; it
   restarts the wait.
 - Arguing a domain collision or eligibility rule in the PR instead of
