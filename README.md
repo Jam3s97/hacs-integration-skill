@@ -34,35 +34,26 @@ Please read and test what it produces before you release it.
 
 ## Install
 
-You need [Claude Code](https://claude.com/claude-code) (the terminal app or
-the VS Code extension).
+Which way to install depends on where you use Claude. The `/plugin` command
+only exists in the terminal version of Claude Code; elsewhere it replies
+"Plugins aren't available in this environment".
 
-### As a plugin (recommended)
+| Where you use Claude | How to install |
+| --- | --- |
+| Claude Code in VS Code | [Copy the folder](#by-copying-the-folder) |
+| Claude Code in a terminal | [Copy the folder](#by-copying-the-folder), or [the plugin command](#as-a-plugin-terminal-only) |
+| Claude Code on the web | [Add it to your repository](#for-one-integrations-repository-only) |
+| Claude desktop or claude.ai app | [Upload a zip](#other-tools) |
 
-In a Claude Code chat, type:
-
-```
-/plugin install hacs-integration --marketplace Jam3s97/hacs-integration-skill
-```
-
-That installs it for all your projects. On Claude Code older than 2.1.275,
-use two steps instead:
-
-```
-/plugin marketplace add Jam3s97/hacs-integration-skill
-/plugin install hacs-integration@hacs-integration-skill
-```
-
-Installed this way, the command is `/hacs-integration:hacs-integration`
-(plugin name, then skill name). To update later, run
-`/plugin marketplace update hacs-integration-skill` followed by
-`/plugin update hacs-integration@hacs-integration-skill`.
+The skill is not listed in the plugin store inside the Claude apps; that store
+only shows Anthropic's own directory.
 
 ### By copying the folder
 
-Run these on your own computer, in a terminal. In VS Code, open one with
-**Terminal → New Terminal**. Installed this way, the command is the shorter
-`/hacs-integration`.
+Works for the VS Code extension and the terminal. Run these on your own
+computer, in a terminal. In VS Code, open one with
+**Terminal → New Terminal**. This installs it for all your projects, and the
+command is `/hacs-integration`.
 
 macOS, Linux or WSL:
 
@@ -89,8 +80,28 @@ mkdir -p /path/to/your-integration/.claude/skills
 cp -r hacs-integration-skill/skills/hacs-integration /path/to/your-integration/.claude/skills/
 ```
 
-Use this route for Claude Code on the web: cloud sessions only see what is in
-the repository.
+This is the only route that works for Claude Code on the web: cloud sessions
+see what is in the repository and nothing from your own computer.
+
+### As a plugin (terminal only)
+
+In Claude Code running in a terminal, type:
+
+```
+/plugin install hacs-integration --marketplace Jam3s97/hacs-integration-skill
+```
+
+On Claude Code older than 2.1.275, use two steps instead:
+
+```
+/plugin marketplace add Jam3s97/hacs-integration-skill
+/plugin install hacs-integration@hacs-integration-skill
+```
+
+Installed this way, the command is `/hacs-integration:hacs-integration`
+(plugin name, then skill name). To update later, run
+`/plugin marketplace update hacs-integration-skill` followed by
+`/plugin update hacs-integration@hacs-integration-skill`.
 
 ### Check it worked
 
@@ -109,8 +120,9 @@ cp -r skills/hacs-integration ~/.claude/skills/
 
 ### Other tools
 
-- **claude.ai app:** zip the `skills/hacs-integration` folder and upload it
-  under Settings → Capabilities → Skills.
+- **Claude desktop or claude.ai app:** zip the `skills/hacs-integration`
+  folder and upload it under Settings → Capabilities → Skills. The pre-flight
+  script needs code execution to be enabled there.
 - **Other agents that support Agent Skills:** copy `skills/hacs-integration`
   into that tool's skills directory.
 
@@ -121,8 +133,8 @@ see [Starting a new integration](#starting-a-new-integration)), then either
 type the command or just ask in plain language; the skill loads itself when the
 request is about a HACS integration.
 
-The commands below are for a copied-folder install. If you installed the
-plugin, type `/hacs-integration:hacs-integration` in place of
+The commands below are for a copied-folder install. If you installed with
+the plugin command, type `/hacs-integration:hacs-integration` in place of
 `/hacs-integration`.
 
 | You want to | Type | Or just ask |
