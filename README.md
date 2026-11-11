@@ -69,8 +69,9 @@ cp -r skills/hacs-integration ~/.claude/skills/
 
 ## Use
 
-Open your integration's repository in Claude Code, then either type the
-command or just ask in plain language; the skill loads itself when the
+Open your integration's folder in Claude Code (for a brand new integration,
+see [Starting a new integration](#starting-a-new-integration)), then either
+type the command or just ask in plain language; the skill loads itself when the
 request is about a HACS integration.
 
 | You want to | Type | Or just ask |
@@ -81,6 +82,28 @@ request is about a HACS integration.
 | Fix a failing check | `/hacs-integration review` | "Why is the HACS action failing?" |
 | Submit to the HACS default store | `/hacs-integration publish` | "Help me submit this to hacs/default" |
 | Answer a maintainer's review | `/hacs-integration respond` | "Here's the review on my HACS PR, help me fix it" (paste it) |
+
+### Starting a new integration
+
+You do not need a repository first. Install the skill for all your projects
+(the per-repository install cannot work here, since there is no repository
+yet), then pick whichever starting point suits you:
+
+- **An empty folder.** Make a folder, open it in Claude Code (or VS Code),
+  and run `/hacs-integration create`. The skill downloads the
+  [integration blueprint](https://github.com/ludeeus/integration_blueprint)
+  into it, renames everything for your integration and sets up git. You
+  create the GitHub repository afterwards and push to it.
+- **A repository made from the blueprint.** On the blueprint's GitHub page
+  click **Use this template**, clone your new repository, open it, and run
+  `/hacs-integration create`. The skill sees the template is already there
+  and goes straight to renaming and filling it in.
+
+Either way it will ask for a few things first: the integration's name and
+domain, what device or service it talks to, whether that is local or cloud,
+and your GitHub username. It also checks whether Home Assistant or HACS
+already has an integration for the same thing, because duplicates are not
+accepted into the default store.
 
 ### What a review gives you
 

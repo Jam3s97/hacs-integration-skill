@@ -49,7 +49,16 @@ validation workflows.
    underscores, must not match any Home Assistant core integration), what
    device or service it talks to, local or cloud, polling or push, and the
    owner's GitHub handle.
-3. Get the template: "Use this template" on GitHub, or
+3. Get the template, according to what the working directory holds:
+   - Already contains the blueprint (`custom_components/integration_blueprint`
+     exists): skip to the next step.
+   - Empty, or the user names a new folder: clone the blueprint into it as
+     below. Tell the user they will need to create the GitHub repository and
+     add it as `origin` before pushing; do not create one for them unasked.
+   - Contains an unrelated project: stop and ask where the integration
+     should go. Never scaffold over existing files.
+
+   "Use this template" on GitHub, or
    `git clone --depth 1 https://github.com/ludeeus/integration_blueprint <repo> && rm -rf <repo>/.git && git -C <repo> init`.
 4. Rename everything. Directory `custom_components/integration_blueprint` →
    `custom_components/<domain>`; then replace `integration_blueprint`,
