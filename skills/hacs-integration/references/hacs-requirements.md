@@ -253,6 +253,15 @@ is not proof; look at a run on the default branch.
 - Publishers who previously deleted a default repository are blocked from
   adding new ones.
 
+### AI use
+
+The Open Home Foundation AI policy
+(<https://developers.home-assistant.io/docs/ai_policy>) applies. AI tools are
+fine for writing code, but the submitter must have reviewed and understood
+everything, must open the PR and write its description themselves using the
+template, and must answer maintainers in their own words. Autonomous agents
+may not open PRs or post comments.
+
 ### Before opening the PR
 
 1. The repository installs and works as a HACS custom repository.

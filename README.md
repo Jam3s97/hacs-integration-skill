@@ -10,6 +10,26 @@ on 80 real submissions to [hacs/default](https://github.com/hacs/default).
 
 Integrations only. It does not cover dashboards, cards or themes.
 
+> **Unofficial.** This is a community project. It is not affiliated with or
+> endorsed by HACS, Home Assistant or the Open Home Foundation.
+
+## Using AI responsibly
+
+The aim is better and safer integrations, and less work for the volunteers
+who review them, not faster submissions. Home Assistant and HACS fall under
+the Open Home Foundation's
+[AI policy](https://developers.home-assistant.io/docs/ai_policy): AI is
+welcome as a tool, but you are responsible for what you submit and must
+understand it. So the skill is built to:
+
+- explain each problem and fix, so you can explain your own code
+- leave the hacs/default pull request, its description and any replies to
+  maintainers to you; it will not open the PR, post comments or write your
+  replies
+- check your work against the rules before a maintainer has to
+
+Please read and test what it produces before you release it.
+
 ## Install
 
 You need [Claude Code](https://claude.com/claude-code) (the terminal app or
@@ -80,8 +100,8 @@ request is about a HACS integration.
 | Add or fix code | `/hacs-integration build` | "Add a reauth flow to this integration" |
 | Check it before submitting | `/hacs-integration review` | "Review this integration before I submit it to HACS" |
 | Fix a failing check | `/hacs-integration review` | "Why is the HACS action failing?" |
-| Submit to the HACS default store | `/hacs-integration publish` | "Help me submit this to hacs/default" |
-| Answer a maintainer's review | `/hacs-integration respond` | "Here's the review on my HACS PR, help me fix it" (paste it) |
+| Get ready to submit to the HACS default store | `/hacs-integration publish` | "Is this ready to submit to hacs/default?" |
+| Work through a maintainer's review | `/hacs-integration respond` | "Here's the review on my HACS PR, help me understand and fix it" (paste it) |
 
 ### Starting a new integration
 
