@@ -24,13 +24,17 @@ year, so when a reference file here disagrees with the live docs
 integrations, and the older <https://hacs.xyz/docs/publish/include> for the
 catalog checks), the live docs win; say so and follow them.
 
-Home Assistant core ships its own agent skills for integration code
-(`ha-integration-knowledge`, `ha-review`, in
-<https://github.com/home-assistant/core/tree/dev/.claude/skills>). They are
-written for core, but where they are available and differ from
-`references/ha-best-practices.md` on how integration code should be written,
-prefer them. This skill's own ground is what is different for a custom
-integration and what the catalog review asks for.
+Home Assistant core ships its own agent guidance for integration code: the
+`ha-integration-knowledge` and `ha-review` skills
+(<https://github.com/home-assistant/core/tree/dev/.claude/skills>) and
+`AGENTS.md` in the repository root. They only load inside a core checkout,
+so the rules from them that apply to a custom integration are carried in
+`references/ha-best-practices.md`. Core's copy is the newer one: where it is
+available and differs on how integration code should be written, prefer it.
+What does not carry over is core-only: `homeassistant/components/` paths,
+`strings.json`, `quality_scale` in the manifest and core's PR rules. This
+skill's own ground is what is different for a custom integration and what
+the catalog review asks for.
 
 ## The human stays in the loop
 
