@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Offline pre-flight check for a Home Assistant custom integration repository.
 
-Mirrors the checks HACS runs (hacs/action and the hacs/default PR workflow) as
+For the Home Assistant Marketplace (formerly HACS). Mirrors the checks run by
+hacs/action and the hacs/default catalog workflow as
 far as they can be evaluated from a local checkout, plus a few static scans for
 problems that commonly surface in review. Standard library only.
 
-Usage: hacs_preflight.py [path-to-repo]   (exit code 1 if any ERROR is found)
+Usage: preflight.py [path-to-repo]   (exit code 1 if any ERROR is found)
 
 Not checked here (needs GitHub): repository description, topics, issues
 enabled, licence detected by GitHub, not archived, a published release, and
@@ -228,6 +229,17 @@ def check_manifest(integ: Path) -> dict:
     elif data["integration_type"] not in INTEGRATION_TYPES:
         report("ERROR", f"manifest.json: invalid integration_type "
                         f"`{data['integration_type']}`")
+    cats = data.get("categories")
+    if cats is None:
+        report("INFO", "manifest.json: add one to three `categories` (integration "
+                       "categories); the HACS action warns without them and the "
+                       "Marketplace catalog uses them for browsing")
+    elif (not isinstance(cats, list) or not 1 <= len(cats) <= 3
+          or len(set(map(str, cats))) != len(cats)
+          or not all(isinstance(c, str) and re.match(r"^[a-z0-9_]+(\.[a-z0-9_]+)?$", c)
+                     for c in cats)):
+        report("ERROR", "manifest.json: `categories` must be a list of one to three "
+                        "distinct integration category names, like `energy.ev_charging`")
     if data.get("config_flow") and not (integ / "config_flow.py").is_file():
         report("ERROR", "manifest.json: config_flow is true but config_flow.py is missing")
     if not data.get("config_flow"):
@@ -412,7 +424,7 @@ def check_extras(root: Path, integ: Path, hacs: dict, manifest: dict) -> None:
     if readme and re.search(r"(?i)custom repositor", readme.read_text(encoding="utf-8",
                                                                       errors="replace")):
         report("INFO", "README describes adding a custom repository; once in the "
-                       "default store, lead with searching for it in HACS")
+                       "catalog, lead with searching for it in the Marketplace")
 
     version = str(manifest.get("version", ""))
     if re.search(r"(a|b|rc|alpha|beta|dev)\d*$", version, re.I):
@@ -454,7 +466,7 @@ def check_workflows(root: Path) -> None:
         text = "\n".join(p.read_text(encoding="utf-8", errors="replace")
                          for p in wf_dir.iterdir() if p.suffix in (".yml", ".yaml"))
     if "hacs/action" not in text:
-        report("ERROR", "no workflow runs hacs/action (required for default inclusion)")
+        report("ERROR", "no workflow runs hacs/action (required for the catalog)")
     elif re.search(r"^\s*ignore\s*:", text, re.M):
         report("ERROR", "hacs/action is configured with `ignore:`; all checks must "
                         "pass with nothing ignored before submitting to hacs/default")

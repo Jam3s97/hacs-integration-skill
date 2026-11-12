@@ -1,11 +1,28 @@
-# HACS requirements for integrations
+# Marketplace (HACS) requirements for integrations
 
-Condensed from <https://hacs.xyz/docs/publish/start>,
+From Home Assistant 2026.11, HACS is built into Home Assistant as the
+**Marketplace** (Settings → Marketplace). It is the same thing under a new
+name: the same catalog, the same repositories, the same `hacs.json`. Users on
+2026.10 or older still run HACS, which reads the same data.
+
+| Term | Meaning |
+| --- | --- |
+| Marketplace | The built-in store in Home Assistant 2026.11+, formerly HACS |
+| Catalog | The list everyone sees without adding a link. Still the [hacs/default](https://github.com/hacs/default) repository, run by the HACS team. Older text calls it "the default store" or "HACS default" |
+| Custom repository | A repository a user adds from a link; no review needed |
+| HACS action | The GitHub Action that validates a repository. Still called that |
+| `hacs.json` | The repository manifest. Still called that |
+
+Condensed from the Marketplace publishing documentation
+(<https://contributors.home-assistant.io/marketplace/>: the custom
+integrations guide, "Get into the catalog", releases, and the `hacs.json`,
+repository structure and validation references), the older HACS pages it
+replaces (<https://hacs.xyz/docs/publish/start>,
 <https://hacs.xyz/docs/publish/include>,
 <https://hacs.xyz/docs/publish/integration>,
-<https://hacs.xyz/docs/publish/action>, the validators in `hacs/integration`,
+<https://hacs.xyz/docs/publish/action>), the validators in `hacs/integration`,
 and the workflow in `hacs/default`. Re-check the live pages if anything here
-looks out of date.
+looks out of date; the Marketplace pages are the current ones.
 
 ## Contents
 
@@ -17,6 +34,7 @@ looks out of date.
 - [Versions and releases](#versions-and-releases)
 - [Validation workflows](#validation-workflows)
 - [Check → fix table](#check--fix-table)
+- [What the Marketplace checks at install](#what-the-marketplace-checks-at-install)
 - [Submitting to hacs/default](#submitting-to-hacsdefault)
 
 ## Repository requirements
@@ -24,8 +42,8 @@ looks out of date.
 - Public repository on GitHub. Not archived.
 - Repository name must not contain "HACS" (a bot on hacs/default rejects
   it); `ha-<thing>` or `hass-<thing>` is the usual convention.
-- **Description** set on the repository (shown in HACS).
-- **Topics** set (used for search in the HACS store). Sensible ones:
+- **Description** set on the repository (shown in the Marketplace).
+- **Topics** set (used for search). Sensible ones:
   `home-assistant`, `hacs`, `custom-integration`, plus the brand or protocol.
 - **Issues enabled**.
 - **README** explaining what it does, how to install and how to use it.
@@ -112,7 +130,17 @@ enforces key order (`domain`, `name`, then alphabetical).
 }
 ```
 
+- `categories`: one to three
+  [integration categories](https://contributors.home-assistant.io/core/integrations/categories/)
+  saying what the integration is for, e.g. `["energy.ev_charging"]`. Optional
+  for a custom integration, but the catalog publishes them for the
+  Marketplace to browse by. The HACS action warns when the key is missing and
+  **fails** on an unknown category, a duplicate, or more than three.
+- `requirements`: list only packages Home Assistant does not already require.
+- `single_config_entry`: set to `true` when only one instance makes sense.
 - `domain`: lowercase, digits, underscores; equals the directory name; must
+  not be used by another repository's integration (the Marketplace refuses to
+  install a second repository with a domain the user already has); must
   not be used by a core integration (including ones landing in the next
   release). Check <https://www.home-assistant.io/integrations/> and
   `homeassistant/components/` on the `dev` branch.
@@ -201,13 +229,37 @@ jobs:
 
 Both jobs must pass on the default branch. `ignore:` accepts a
 space-separated list of `archived brands description hacsjson images
-information issues license topics`; it is acceptable while developing and
+information integration_categories issues license topics`; it is acceptable while developing and
 **must be absent** when submitting to hacs/default. If pinning `hacs/action`
 to a version, enable Dependabot or Renovate to keep it current.
 
 Some checks (`archived`, `description`, `issues`, `license`, `topics`) are
 skipped when the action runs on a pull request from a fork, so a green PR run
 is not proof; look at a run on the default branch.
+
+Timing: the catalog data is regenerated every 4 hours and the Marketplace
+reads it every 6, so a new release can take several hours to reach users.
+Users who added the repository from a link get updates every 48 hours. Write
+real release notes; the update entity shows them. Mark test builds as
+pre-releases; users only get those if they opt in.
+
+## What the Marketplace checks at install
+
+Separate from the HACS action, the Marketplace itself refuses an install when:
+
+- `hacs.json` is missing from the repository root
+- the repository is archived or was removed from the catalog
+- files are not where the repository structure says
+- the release's `homeassistant` minimum is newer than the user's version
+  (they are offered older releases instead)
+- another installed repository already owns the same domain
+- the domain is a core integration's and the user has not confirmed
+- after writing: `manifest.json` has a different domain or no loadable
+  `version`
+- the download, or the unpacked ZIP, exceeds 100 MiB or 50,000 files
+
+An update replaces the whole integration folder; use `persistent_directory`
+for files that must survive.
 
 ## Check → fix table
 
@@ -225,6 +277,7 @@ is not proof; look at a run on the default branch.
 | `expected a URL` on documentation / issue_tracker | Not a URL | Use a full `https://` URL. |
 | Invalid version | Not SemVer/CalVer | Use e.g. `1.2.3`. |
 | `The repository is archived` | Archived | Unarchive, or do not submit. |
+| integration categories: unknown value / too many / duplicates | `categories` in the manifest is invalid | Use one to three names from the integration categories list. |
 | hassfest: `Manifest keys are not sorted correctly: domain, name, then alphabetical order` | Order | Reorder keys. |
 | hassfest: `Invalid iot_class` / `required key not provided … iot_class` | Missing or wrong | Set a valid `iot_class`. |
 | hassfest: `Config flow … config_flow.py` | `config_flow: true` without the file, or the reverse | Make manifest and files agree. |
@@ -256,7 +309,7 @@ is not proof; look at a run on the default branch.
 ### AI use
 
 The Open Home Foundation AI policy
-(<https://developers.home-assistant.io/docs/ai_policy>) applies. AI tools are
+(<https://contributors.home-assistant.io/start/ai-policy/>) applies. AI tools are
 fine for writing code, but the submitter must have reviewed and understood
 everything, must open the PR and write its description themselves using the
 template, and must answer maintainers in their own words. Autonomous agents
@@ -338,5 +391,17 @@ Do not delete or rename away a repository that is in the default store; open a
 removal request at `hacs/integration` first. Archived repositories are removed
 automatically.
 
-Tell users how to add the repository with a My Home Assistant link:
-<https://my.home-assistant.io/create-link/?redirect=hacs_repository>.
+Renaming or transferring a listed repository needs no action; the HACS team
+updates the catalog. A repository found to be harmful is marked critical and
+the Marketplace uninstalls it everywhere.
+
+### My links for the README
+
+- **Open the repository in the Marketplace** (lets users add it before it is
+  in the catalog): create a badge at
+  <https://my.home-assistant.io/create-link/?redirect=marketplace_repository>
+  with owner, repository and `category=integration`. That link is new in
+  2026.11. The older `hacs_repository` link takes the same parameters and
+  opens HACS before 2026.11 and the Marketplace after, so it reaches both.
+- **Start setup once installed:**
+  `https://my.home-assistant.io/redirect/config_flow_start/?domain=<domain>`.

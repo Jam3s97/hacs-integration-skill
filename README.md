@@ -1,26 +1,43 @@
-# hacs-integration skill
+# Home Assistant Marketplace skills
 
-[![CI](https://github.com/Jam3s97/hacs-integration-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/Jam3s97/hacs-integration-skill/actions/workflows/ci.yml)
+[![CI](https://github.com/Jam3s97/home-assistant-marketplace-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/Jam3s97/home-assistant-marketplace-skills/actions/workflows/ci.yml)
 
-An [Agent Skill](https://agentskills.io) that helps you create, build and
-review Home Assistant custom integrations distributed through
-[HACS](https://hacs.xyz), and get them accepted into the HACS default store.
+[Agent Skills](https://agentskills.io) for people who publish to the
+**Home Assistant Marketplace**, which is the new name for HACS now that it is
+built into Home Assistant (2026.11 and later).
 
-It knows the HACS publishing rules, Home Assistant's developer best practice,
-and what maintainers actually ask for: it was built from the review comments
-on 80 real submissions to [hacs/default](https://github.com/hacs/default).
+There is one skill so far, **`marketplace-integration`**. It helps you create,
+build and review a custom integration, and get it accepted into the
+Marketplace catalog, the list you may know as the HACS default store.
 
-Integrations only. It does not cover dashboards, cards or themes.
+It knows the Marketplace and HACS publishing rules, Home Assistant's developer
+best practice, and what maintainers actually ask for: it was built from the
+review comments on 80 real submissions to
+[hacs/default](https://github.com/hacs/default).
+
+Integrations only for now. Skills for dashboards, cards and themes may follow.
+
+### HACS or Marketplace?
+
+Both. The Marketplace is HACS under a new name, and most of the pieces kept
+theirs:
+
+- the catalog is still the [hacs/default](https://github.com/hacs/default)
+  repository
+- your repository still needs a `hacs.json`
+- the check is still the HACS action
+- if you are on Home Assistant 2026.10 or older, you still use HACS, and
+  everything here applies
 
 > **Unofficial.** This is a community project. It is not affiliated with or
-> endorsed by HACS, Home Assistant or the Open Home Foundation.
+> endorsed by Home Assistant, HACS or the Open Home Foundation.
 
 ## Using AI responsibly
 
 The aim is better and safer integrations, and less work for the volunteers
 who review them, not faster submissions. Home Assistant and HACS fall under
 the Open Home Foundation's
-[AI policy](https://developers.home-assistant.io/docs/ai_policy): AI is
+[AI policy](https://contributors.home-assistant.io/start/ai-policy/): AI is
 welcome as a tool, but you are responsible for what you submit and must
 understand it. So the skill is built to:
 
@@ -53,22 +70,22 @@ only shows Anthropic's own directory.
 Works for the VS Code extension and the terminal. Run these on your own
 computer, in a terminal. In VS Code, open one with
 **Terminal → New Terminal**. This installs it for all your projects, and the
-command is `/hacs-integration`.
+command is `/marketplace-integration`.
 
 macOS, Linux or WSL:
 
 ```bash
-git clone https://github.com/Jam3s97/hacs-integration-skill
+git clone https://github.com/Jam3s97/home-assistant-marketplace-skills
 mkdir -p ~/.claude/skills
-cp -r hacs-integration-skill/skills/hacs-integration ~/.claude/skills/
+cp -r home-assistant-marketplace-skills/skills/marketplace-integration ~/.claude/skills/
 ```
 
 Windows (PowerShell):
 
 ```powershell
-git clone https://github.com/Jam3s97/hacs-integration-skill
+git clone https://github.com/Jam3s97/home-assistant-marketplace-skills
 New-Item -ItemType Directory -Force "$HOME\.claude\skills" | Out-Null
-Copy-Item -Recurse hacs-integration-skill\skills\hacs-integration "$HOME\.claude\skills\"
+Copy-Item -Recurse home-assistant-marketplace-skills\skills\marketplace-integration "$HOME\.claude\skills\"
 ```
 
 ### For one integration's repository only
@@ -77,7 +94,7 @@ Copy the folder into that repository instead, and commit it:
 
 ```bash
 mkdir -p /path/to/your-integration/.claude/skills
-cp -r hacs-integration-skill/skills/hacs-integration /path/to/your-integration/.claude/skills/
+cp -r home-assistant-marketplace-skills/skills/marketplace-integration /path/to/your-integration/.claude/skills/
 ```
 
 This is the only route that works for Claude Code on the web: cloud sessions
@@ -88,42 +105,53 @@ see what is in the repository and nothing from your own computer.
 In Claude Code running in a terminal, type:
 
 ```
-/plugin install hacs-integration --marketplace Jam3s97/hacs-integration-skill
+/plugin install marketplace-skills --marketplace Jam3s97/home-assistant-marketplace-skills
 ```
 
 On Claude Code older than 2.1.275, use two steps instead:
 
 ```
-/plugin marketplace add Jam3s97/hacs-integration-skill
-/plugin install hacs-integration@hacs-integration-skill
+/plugin marketplace add Jam3s97/home-assistant-marketplace-skills
+/plugin install marketplace-skills@home-assistant-marketplace-skills
 ```
 
-Installed this way, the command is `/hacs-integration:hacs-integration`
+Installed this way, the command is `/marketplace-skills:marketplace-integration`
 (plugin name, then skill name). To update later, run
-`/plugin marketplace update hacs-integration-skill` followed by
-`/plugin update hacs-integration@hacs-integration-skill`.
+`/plugin marketplace update home-assistant-marketplace-skills` followed by
+`/plugin update marketplace-skills@home-assistant-marketplace-skills`.
 
 ### Check it worked
 
 Start a **new** Claude Code chat (a chat that was already open will not see
-the skill) and type `/hacs-integration`. It should appear in the command
+the skill) and type `/marketplace-integration`. It should appear in the command
 list. If it does not: for a plugin install, run `/plugin` and look under
 Installed; for a copied folder, check that this file exists:
-`~/.claude/skills/hacs-integration/SKILL.md`.
+`~/.claude/skills/marketplace-integration/SKILL.md`.
 
 ### Updating a copied folder
 
 ```bash
-cd hacs-integration-skill && git pull
-cp -r skills/hacs-integration ~/.claude/skills/
+cd home-assistant-marketplace-skills && git pull
+rm -rf ~/.claude/skills/marketplace-integration
+cp -r skills/marketplace-integration ~/.claude/skills/
 ```
+
+Deleting the old copy first matters: a plain copy leaves behind files that a
+new version removed.
+
+**Coming from `hacs-integration`?** The skill was renamed. Delete the old
+folder (`rm -rf ~/.claude/skills/hacs-integration`), then install as above.
+The command is now `/marketplace-integration`. The old repository address
+redirects, but `git remote set-url origin
+https://github.com/Jam3s97/home-assistant-marketplace-skills` keeps your clone
+tidy.
 
 ### Other tools
 
-- **Claude desktop or claude.ai app:** zip the `skills/hacs-integration`
+- **Claude desktop or claude.ai app:** zip the `skills/marketplace-integration`
   folder and upload it under Settings → Capabilities → Skills. The pre-flight
   script needs code execution to be enabled there.
-- **Other agents that support Agent Skills:** copy `skills/hacs-integration`
+- **Other agents that support Agent Skills:** copy `skills/marketplace-integration`
   into that tool's skills directory.
 
 ## Use
@@ -131,20 +159,20 @@ cp -r skills/hacs-integration ~/.claude/skills/
 Open your integration's folder in Claude Code (for a brand new integration,
 see [Starting a new integration](#starting-a-new-integration)), then either
 type the command or just ask in plain language; the skill loads itself when the
-request is about a HACS integration.
+request is about a custom integration for the Marketplace or HACS.
 
 The commands below are for a copied-folder install. If you installed with
-the plugin command, type `/hacs-integration:hacs-integration` in place of
-`/hacs-integration`.
+the plugin command, type `/marketplace-skills:marketplace-integration` in place of
+`/marketplace-integration`.
 
 | You want to | Type | Or just ask |
 | --- | --- | --- |
-| Start a new integration | `/hacs-integration create` | "Scaffold a HACS integration for my heat pump" |
-| Add or fix code | `/hacs-integration build` | "Add a reauth flow to this integration" |
-| Check it before submitting | `/hacs-integration review` | "Review this integration before I submit it to HACS" |
-| Fix a failing check | `/hacs-integration review` | "Why is the HACS action failing?" |
-| Get ready to submit to the HACS default store | `/hacs-integration publish` | "Is this ready to submit to hacs/default?" |
-| Work through a maintainer's review | `/hacs-integration respond` | "Here's the review on my HACS PR, help me understand and fix it" (paste it) |
+| Start a new integration | `/marketplace-integration create` | "Scaffold a custom integration for my heat pump" |
+| Add or fix code | `/marketplace-integration build` | "Add a reauth flow to this integration" |
+| Check it before submitting | `/marketplace-integration review` | "Review this integration before I submit it to the Marketplace" |
+| Fix a failing check | `/marketplace-integration review` | "Why is the HACS action failing?" |
+| Get ready to submit to the Marketplace catalog | `/marketplace-integration publish` | "Is this ready to submit to hacs/default?" |
+| Work through a maintainer's review | `/marketplace-integration respond` | "Here's the review on my HACS PR, help me understand and fix it" (paste it) |
 
 ### Starting a new integration
 
@@ -153,24 +181,24 @@ You do not need a repository first. Install the skill for all your projects
 yet), then pick whichever starting point suits you:
 
 - **An empty folder.** Make a folder, open it in Claude Code (or VS Code),
-  and run `/hacs-integration create`. The skill downloads the
+  and run `/marketplace-integration create`. The skill downloads the
   [integration blueprint](https://github.com/ludeeus/integration_blueprint)
   into it, renames everything for your integration and sets up git. You
   create the GitHub repository afterwards and push to it.
 - **A repository made from the blueprint.** On the blueprint's GitHub page
   click **Use this template**, clone your new repository, open it, and run
-  `/hacs-integration create`. The skill sees the template is already there
+  `/marketplace-integration create`. The skill sees the template is already there
   and goes straight to renaming and filling it in.
 
 Either way it will ask for a few things first: the integration's name and
 domain, what device or service it talks to, whether that is local or cloud,
-and your GitHub username. It also checks whether Home Assistant or HACS
-already has an integration for the same thing, because duplicates are not
-accepted into the default store.
+and your GitHub username. It also checks whether Home Assistant or the
+Marketplace already has an integration for the same thing, because duplicates are not
+accepted into the catalog.
 
 ### What a review gives you
 
-`/hacs-integration review` runs the pre-flight checker, reads your code, and
+`/marketplace-integration review` runs the pre-flight checker, reads your code, and
 reports findings in three groups, each with a file, line and fix:
 
 - **Blocking**: a HACS or hassfest check will fail, or the PR would be closed
@@ -187,12 +215,12 @@ The pre-flight script works without Claude. It needs Python 3.10 or later and
 nothing else:
 
 ```bash
-python3 ~/.claude/skills/hacs-integration/scripts/hacs_preflight.py /path/to/your-integration
+python3 ~/.claude/skills/marketplace-integration/scripts/preflight.py /path/to/your-integration
 ```
 
 If you installed the plugin, there is no copy at that path; run it from a clone
 of this repository instead
-(`python3 skills/hacs-integration/scripts/hacs_preflight.py /path/to/your-integration`).
+(`python3 skills/marketplace-integration/scripts/preflight.py /path/to/your-integration`).
 
 It prints `ERROR`, `WARN` and `INFO` lines. Exit code 1 means at least one
 blocking problem was found, so it can be used in CI.
@@ -201,23 +229,25 @@ blocking problem was found, so it can be used in CI.
 
 | File | Purpose |
 | --- | --- |
-| `skills/hacs-integration/SKILL.md` | Entry point: the create, build, review, publish and respond workflows |
-| `skills/hacs-integration/references/hacs-requirements.md` | HACS publishing rules, `hacs.json`, `manifest.json`, brand images, workflows, a check → fix table, and the hacs/default PR procedure |
-| `skills/hacs-integration/references/ha-best-practices.md` | Home Assistant developer guidance and a quality-scale checklist |
-| `skills/hacs-integration/references/common-pr-feedback.md` | What closed hacs/default submissions were stopped for |
-| `skills/hacs-integration/references/review-rounds.md` | What reviewers asked for on submissions that were merged, and how to respond to a review |
-| `skills/hacs-integration/scripts/hacs_preflight.py` | The offline checker |
+| `skills/marketplace-integration/SKILL.md` | Entry point: the create, build, review, publish and respond workflows |
+| `skills/marketplace-integration/references/marketplace-requirements.md` | Marketplace and HACS publishing rules, `hacs.json`, `manifest.json`, brand images, workflows, a check → fix table, and the hacs/default PR procedure |
+| `skills/marketplace-integration/references/ha-best-practices.md` | Home Assistant developer guidance and a quality-scale checklist |
+| `skills/marketplace-integration/references/common-pr-feedback.md` | What closed hacs/default submissions were stopped for |
+| `skills/marketplace-integration/references/review-rounds.md` | What reviewers asked for on submissions that were merged, and how to respond to a review |
+| `skills/marketplace-integration/scripts/preflight.py` | The offline checker |
 | `.claude-plugin/` | Plugin and marketplace manifests for the one-line install |
 | `tests/` | Tests for the checker and the skill's structure, run by CI |
 
 ## Keeping it current
 
-HACS and Home Assistant requirements change several times a year. The
+Marketplace and Home Assistant requirements change several times a year. The
 references were written in November 2026 from:
 
-- <https://hacs.xyz/docs/publish/start> and
+- the Marketplace publishing documentation,
+  <https://contributors.home-assistant.io/marketplace/>
+- the older HACS pages, <https://hacs.xyz/docs/publish/start> and
   <https://hacs.xyz/docs/publish/include>
-- <https://developers.home-assistant.io>
+- <https://contributors.home-assistant.io>
 - <https://github.com/ludeeus/integration_blueprint>
 - pull requests in <https://github.com/hacs/default>
 
