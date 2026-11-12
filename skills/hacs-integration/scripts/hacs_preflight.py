@@ -253,6 +253,10 @@ def check_brand(integ: Path) -> None:
                 report("ERROR", "brand/icon.png is not a PNG file")
             else:
                 w, h = int.from_bytes(head[16:20], "big"), int.from_bytes(head[20:24], "big")
+                if icon.stat().st_size < 2048:
+                    report("INFO", "brand/icon.png is very small on disk and looks like a "
+                                   "placeholder; replace it with the real icon before "
+                                   "release")
                 if w != h:
                     report("WARN", f"brand/icon.png is {w}x{h}; icons must be square "
                                    "(256x256, with icon@2x.png at 512x512)")
@@ -278,6 +282,14 @@ def check_translations(integ: Path, manifest: dict) -> None:
     else:
         load_json(en)
 
+
+PLATFORM_NAMES = {
+    "alarm_control_panel", "binary_sensor", "button", "calendar", "camera", "climate",
+    "cover", "device_tracker", "event", "fan", "humidifier", "image", "lawn_mower", "light",
+    "lock", "media_player", "notify", "number", "remote", "scene", "select", "sensor",
+    "siren", "switch", "text", "time", "todo", "update", "vacuum", "valve", "water_heater",
+    "weather",
+}
 
 # (regex over integration code, minimum (year, month), label)
 FLOORS = (
@@ -346,6 +358,30 @@ def check_extras(root: Path, integ: Path, hacs: dict, manifest: dict) -> None:
         for key in ("reauth_confirm", "reauth_successful"):
             if key not in text:
                 report("WARN", f"translations/en.json has no `{key}` string for the reauth flow")
+    for path, text in py.items():
+        for match in re.finditer(r"class \w+\(\s*(?:\w+\.)?DataUpdateCoordinator\b", text):
+            body = text[match.start():]
+            nxt = re.search(r"\nclass ", body[1:])
+            body = body[: nxt.start() + 1] if nxt else body
+            if "super().__init__(" in body and "config_entry" not in body:
+                report("WARN", f"{path.relative_to(integ)}: coordinator does not pass "
+                               "`config_entry=` to DataUpdateCoordinator.__init__; pass "
+                               "the entry explicitly")
+    for path, text in py.items():
+        if path.stem in PLATFORM_NAMES and "PARALLEL_UPDATES" not in text:
+            report("INFO", f"{path.relative_to(integ)}: set PARALLEL_UPDATES (0 for "
+                           "coordinator-backed read-only platforms, 1 if the device "
+                           "cannot take concurrent commands)")
+    if re.search(r"async_set_unique_id\(\s*DOMAIN\s*\)", code) and not manifest.get(
+            "single_config_entry"):
+        report("INFO", "uses the domain as the config entry unique ID to allow one "
+                       "entry; set `\"single_config_entry\": true` in manifest.json instead")
+    for doc in root.glob("*.md"):
+        if doc.name.lower().startswith("readme"):
+            continue
+        if "integration_blueprint" in doc.read_text(encoding="utf-8", errors="replace"):
+            report("INFO", f"{doc.name} still mentions integration_blueprint; fine as a "
+                           "credit, otherwise update it")
     services = integ / "services.yaml"
     if services.is_file():
         for name in re.findall(r"^([a-z0-9_]+):", services.read_text(encoding="utf-8",

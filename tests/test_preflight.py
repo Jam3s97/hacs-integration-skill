@@ -82,7 +82,7 @@ def make_repo(root: Path) -> Path:
     (integ / "__init__.py").write_text('"""Awesome."""\n')
     (integ / "config_flow.py").write_text('"""Config flow."""\n')
     (integ / "translations" / "en.json").write_text(json.dumps(EN))
-    (integ / "brand" / "icon.png").write_bytes(png(256, 256))
+    (integ / "brand" / "icon.png").write_bytes(png(256, 256) + b"\0" * 2048)
     return integ
 
 
@@ -232,6 +232,35 @@ class PreflightTest(unittest.TestCase):
     def test_partial_dev_setup(self) -> None:
         (self.root / ".devcontainer.json").unlink()
         self.assert_flags("INFO", "missing a devcontainer")
+
+    def test_coordinator_without_config_entry(self) -> None:
+        (self.integ / "coordinator.py").write_text(
+            "class C(DataUpdateCoordinator[dict]):\n"
+            "    def __init__(self, hass):\n"
+            "        super().__init__(hass, LOGGER, name=DOMAIN)\n"
+        )
+        self.assert_flags("WARN", "`config_entry=`")
+
+    def test_coordinator_with_config_entry_is_clean(self) -> None:
+        (self.integ / "coordinator.py").write_text(
+            "class C(DataUpdateCoordinator[dict]):\n"
+            "    def __init__(self, hass, entry):\n"
+            "        super().__init__(hass, LOGGER, name=DOMAIN, config_entry=entry)\n"
+        )
+        _, out = run(self.root)
+        self.assertNotIn("config_entry=", out)
+
+    def test_platform_without_parallel_updates(self) -> None:
+        (self.integ / "sensor.py").write_text('"""Sensors."""\n')
+        self.assert_flags("INFO", "PARALLEL_UPDATES")
+
+    def test_domain_as_unique_id(self) -> None:
+        (self.integ / "config_flow.py").write_text("await self.async_set_unique_id(DOMAIN)\n")
+        self.assert_flags("INFO", "single_config_entry")
+
+    def test_placeholder_icon(self) -> None:
+        (self.integ / "brand" / "icon.png").write_bytes(png(256, 256))
+        self.assert_flags("INFO", "placeholder")
 
     def test_two_integrations(self) -> None:
         (self.root / "custom_components" / "other").mkdir()

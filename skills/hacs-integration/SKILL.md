@@ -124,6 +124,9 @@ and why; do not leave it for the user to discover.
    their strings, or reviewers will ask for it.
 7. Add `custom_components/<domain>/brand/icon.png` (and ideally `logo.png`),
    then **delete `ignore: brands`** from `.github/workflows/validate.yml`.
+   If the user has no artwork yet, a generated placeholder keeps the check
+   green, but say plainly that it is a placeholder and list replacing it
+   under what the user still has to do.
 8. Replace the README with real install, configuration and entity
    documentation. Keep the LICENSE (MIT) or swap for another OSI licence.
 9. Verify, and run each of these rather than assuming:
@@ -154,12 +157,17 @@ writing or changing integration code. The non-negotiables:
 - Use `async_get_clientsession(hass)`; do not create your own session.
 - Runtime objects go in `entry.runtime_data` (typed `ConfigEntry` alias), not
   `hass.data[DOMAIN]`.
-- One `DataUpdateCoordinator` per polled endpoint; raise `UpdateFailed` for
+- One `DataUpdateCoordinator` per polled endpoint, constructed with
+  `config_entry=entry`; raise `UpdateFailed` for
   transient errors and `ConfigEntryAuthFailed` for bad credentials.
 - Entities: `_attr_has_entity_name = True`, stable `unique_id`, `DeviceInfo`,
   device classes / state classes / units from the enums, names from
   `translation_key`, `available` reflecting reality.
 - `async_unload_entry` must cleanly undo setup.
+- Set `PARALLEL_UPDATES` in every platform module.
+- An integration that only makes sense once (no account, no host) sets
+  `"single_config_entry": true` in the manifest rather than using the domain
+  as a unique ID.
 - User-facing strings live in `translations/en.json` (custom integrations do
   not load `strings.json`).
 
