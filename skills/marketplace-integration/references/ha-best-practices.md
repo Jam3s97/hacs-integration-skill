@@ -16,8 +16,11 @@ target; Gold items are listed for completeness.
 - [File layout](#file-layout)
 - [Setup and teardown](#setup-and-teardown)
 - [Config flow](#config-flow)
+- [OAuth 2.0 accounts](#oauth-20-accounts)
+- [Config subentries](#config-subentries)
 - [Async and I/O](#async-and-io)
 - [Fetching data](#fetching-data)
+- [Bluetooth devices](#bluetooth-devices)
 - [Entities](#entities)
 - [Devices](#devices)
 - [Services (actions)](#services-actions)
@@ -36,7 +39,8 @@ target; Gold items are listed for completeness.
 custom_components/<domain>/
   __init__.py        async_setup_entry / async_unload_entry
   manifest.json
-  config_flow.py     ConfigFlow (+ OptionsFlow, reauth, reconfigure)
+  config_flow.py     ConfigFlow (+ OptionsFlow, reauth, reconfigure, subentry flows)
+  application_credentials.py   only for OAuth 2.0 integrations
   const.py           DOMAIN, LOGGER, constants
   coordinator.py     DataUpdateCoordinator subclass(es)
   data.py            runtime_data dataclass + typed ConfigEntry alias
@@ -134,6 +138,72 @@ async def async_unload_entry(hass: HomeAssistant, entry: AwesomeConfigEntry) -> 
   users who need another can disable polling and call
   `homeassistant.update_entity`.
 
+## OAuth 2.0 accounts
+
+For a cloud service that signs users in with OAuth 2.0, use Home Assistant's
+helpers instead of writing token handling (developer docs: "OAuth 2.0
+support" and "Application credentials").
+
+- Add `"application_credentials"` to manifest `dependencies` and an
+  `application_credentials.py` with `async_get_authorization_server`
+  returning the provider's `authorize_url` and `token_url`. Return
+  `LocalOAuth2ImplementationWithPkce` from `async_get_auth_implementation`
+  only if the provider requires PKCE.
+- Users enter their own client ID and secret in the Application Credentials
+  dialog. Nabu Casa account linking is not available to a custom
+  integration, and a client secret committed to the repository is a
+  security finding in review (see Security below). Put instructions for
+  creating credentials, with a link to the provider's console, under the
+  `application_credentials` `description` key in `translations/en.json`;
+  fill URLs in with `async_get_description_placeholders`.
+- The config flow subclasses
+  `config_entry_oauth2_flow.AbstractOAuth2FlowHandler`, sets scopes in
+  `extra_authorize_data`, and in `async_oauth_create_entry` sets a unique ID
+  from the account (fetched with the new token), not from the token itself.
+- Always add reauth. In `async_oauth_create_entry`, when
+  `self.source == SOURCE_REAUTH`, call `_abort_if_unique_id_mismatch()` and
+  `async_update_reload_and_abort(self._get_reauth_entry(), data_updates=data)`
+  so a different account cannot replace the original.
+- In setup, get the implementation with
+  `async_get_config_entry_implementation`, wrap it in `OAuth2Session`, and
+  hand the session to the library, which calls `async_ensure_token_valid()`
+  before each request. Do a first coordinator refresh (or call
+  `async_ensure_token_valid()` in `async_setup_entry`) before forwarding
+  platforms.
+- Let the helper's exceptions propagate. The token request errors are
+  already `ConfigEntryAuthFailed` or `ConfigEntryNotReady` subclasses with
+  translated messages, and a coordinator handles them. Do not catch them to
+  re-raise as the same thing, and keep token logic out of entities.
+- Do not accept client credentials in `configuration.yaml`.
+
+## Config subentries
+
+Use subentries when one account or connection holds several user-chosen
+things that are each added, changed and removed on their own: locations for
+a weather service, rooms, conversation agents on one API key. The parent
+entry keeps the credentials; each subentry keeps one item's settings. Do not
+use options or a list in `entry.data` for this.
+
+- In the config flow class, return the types from the classmethod
+  `async_get_supported_subentry_types(cls, config_entry)`, e.g.
+  `{"location": LocationSubentryFlowHandler}`. Each handler subclasses
+  `ConfigSubentryFlow` and returns `SubentryFlowResult`.
+- A subentry flow starts only from `user` or `reconfigure`: no discovery and
+  no reauth (reauth belongs to the parent entry). In `reconfigure`, read the
+  parent with `self._get_entry()` and the item with
+  `self._get_reconfigure_subentry()`.
+- A subentry unique ID only needs to be unique within its parent entry.
+- In setup, loop over `entry.subentries.values()` (check `subentry_type`,
+  read `subentry.data`) and add each item's entities with
+  `async_add_entities(entities, config_subentry_id=subentry.subentry_id)`, so
+  they and their device belong to that subentry and go when it is removed. A
+  device belongs to at most one subentry, and child devices must be in the
+  same subentry as their parent.
+- Strings go under `config_subentries.<type>` in `translations/en.json`,
+  with the same `step` / `error` / `abort` layout as `config`.
+- A repair can hand off to a subentry's reconfigure flow through
+  `hass.config_entries.subentries.async_init`.
+
 ## Async and I/O
 
 Home Assistant runs one event loop. Anything that blocks it freezes the whole
@@ -156,6 +226,8 @@ integration.
   calling `async_write_ha_state` from a thread is an error, use
   `schedule_update_ha_state`.
 - Importing a heavy module at call time blocks too; import at module top.
+- Times come from `homeassistant.util.dt` (`dt_util.utcnow()`, `dt_util.now()`,
+  `dt_util.as_local()`), which are timezone-aware; never naive `datetime.now()`.
 - `ZoneInfo(name)` reads from disk: use
   `await dt_util.async_get_time_zone(name)`.
 - List every core component the code uses (`http`, `frontend`,
@@ -183,6 +255,48 @@ integration.
 - Set `PARALLEL_UPDATES` in each platform module (`0` for coordinator-backed
   read-only platforms, `1` for devices that cannot handle concurrent
   commands).
+
+## Bluetooth devices
+
+Home Assistant owns the Bluetooth adapters, including remote ESPHome
+proxies. An integration uses them through the `bluetooth` component and
+never opens its own scanner (developer docs: "Bluetooth", "Bluetooth API"
+and "Fetching Bluetooth data").
+
+- Manifest: `"dependencies": ["bluetooth_adapters"]` so remote adapters are
+  connected before setup, a `bluetooth` matcher list (`local_name`,
+  `service_uuid`, `service_data_uuid`, `manufacturer_id`,
+  `manufacturer_data_start`; no wildcard in the first three characters of
+  `local_name`), and `"connectable": false` in the matcher when the device
+  only needs advertisements, so passive proxies work too.
+- Config flow: `async_step_bluetooth(discovery_info)` sets the unique ID from
+  `discovery_info.address`. The `user` step offers devices from
+  `bluetooth.async_discovered_service_info(hass)` rather than asking for a
+  MAC address. Reject discovered devices that need a connection when
+  `discovery_info.connectable` is false.
+- Choose the coordinator by how the device reports:
+  - advertisements only, sensor-like:
+    `PassiveBluetoothProcessorCoordinator`;
+  - advertisements, but some values need a connection:
+    `ActiveBluetoothProcessorCoordinator`;
+  - advertisements, not sensor-like (lights, locks…):
+    `PassiveBluetoothCoordinator` or `ActiveBluetoothDataUpdateCoordinator`;
+  - connection only, no useful advertisements: a normal
+    `DataUpdateCoordinator`.
+  Processor coordinators are started with `entry.async_on_unload(coordinator.async_start())`
+  after the platforms are forwarded.
+- Connecting: get the device with
+  `bluetooth.async_ble_device_from_address(hass, address, connectable=True)`
+  and raise `ConfigEntryNotReady` if it is `None`. Use a fresh `BleakClient`
+  per connection, a timeout of at least ten seconds, and
+  `bleak-retry-connector`. If a library needs a scanner, pass it
+  `bluetooth.async_get_scanner(hass)`.
+- Availability: use `bluetooth.async_track_unavailable` or
+  `async_address_present`, not a timer of your own.
+  `bluetooth.async_address_reachability_diagnostics` gives a readable reason
+  for logs and errors; do not parse it.
+- `iot_class` is usually `local_push` for advertisement-driven devices and
+  `local_polling` when the integration connects to poll.
 
 ## Entities
 
@@ -228,7 +342,8 @@ class AwesomeSensor(AwesomeEntity, SensorEntity):
 - Do not add entities for data Home Assistant deliberately exposes only
   through an action, for example weather forecasts
   (`weather.get_forecasts`).
-- Keep `extra_state_attributes` small and stable. Anything worth graphing or
+- Keep `extra_state_attributes` small, stable and JSON-serialisable (convert
+  `datetime` and library objects to strings or numbers). Anything worth graphing or
   automating on is its own entity. Never put large or constantly changing
   blobs in attributes.
 - Do not do I/O in properties. Properties read cached data.

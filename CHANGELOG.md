@@ -3,6 +3,19 @@
 Changes to the skill that users receive. The version is the one in
 `.claude-plugin/plugin.json`; plugin installs only update when it changes.
 
+## [0.2.2] - 2026-11-12
+
+### Added
+
+- Create mode works out the integration's type before any code is written:
+  local or cloud, polling or push, how the user signs in, Bluetooth,
+  discovery, device, hub or service, and whether it needs subentries.
+- Build mode ends with a checklist to run before a change is called done.
+- `references/ha-best-practices.md` has new sections, from the Home Assistant
+  developer docs, on OAuth 2.0 with application credentials, config
+  subentries, and Bluetooth devices, plus rules on timezone-aware times and
+  JSON-serialisable attributes.
+
 ## [0.2.1] - 2026-11-12
 
 ### Added
