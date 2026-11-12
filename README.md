@@ -2,12 +2,15 @@
 
 [![CI](https://github.com/Jam3s97/home-assistant-marketplace-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/Jam3s97/home-assistant-marketplace-skills/actions/workflows/ci.yml)
 
+> If you find this useful, please give it a ⭐ on GitHub
+
 [Agent Skills](https://agentskills.io) for people who publish to the
 **Home Assistant Marketplace**, which is the new name for HACS now that it is
-built into Home Assistant (2026.11 and later).
+built into Home Assistant (from 2026.11 on).
 
 There is one skill so far, **`marketplace-integration`**. It helps you create,
-build and review a custom integration, and get it accepted into the
+build and review a custom integration.
+It can also help refine your integration if you wish to get it added into the
 Marketplace catalog, the list you may know as the HACS default store.
 
 It knows the Marketplace and HACS publishing rules, Home Assistant's developer
@@ -191,7 +194,8 @@ the plugin command, type `/marketplace-skills:marketplace-integration` in place 
 
 ### Starting a new integration
 
-You do not need a repository first. Install the skill for all your projects
+You do not need a repository first.
+Install the skill for all your projects
 (the per-repository install cannot work here, since there is no repository
 yet), then pick whichever starting point suits you:
 
@@ -200,7 +204,7 @@ yet), then pick whichever starting point suits you:
   [integration blueprint](https://github.com/ludeeus/integration_blueprint)
   into it, renames everything for your integration and sets up git. You
   create the GitHub repository afterwards and push to it.
-- **A repository made from the blueprint.** On the blueprint's GitHub page
+- **A repository made from this awesome [integration blueprint](https://github.com/ludeeus/integration_blueprint).** On the blueprint's GitHub page
   click **Use this template**, clone your new repository, open it, and run
   `/marketplace-integration create`. The skill sees the template is already there
   and goes straight to renaming and filling it in.
@@ -277,7 +281,6 @@ To be emailed about new versions, click **Watch** on the repository, then
 zip has to be replaced by hand.
 Issues and pull requests are welcome.
 
-⭐ If you find this useful, please give the repo a star.
 
 ## Licence
 
