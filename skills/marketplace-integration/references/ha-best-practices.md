@@ -1,8 +1,11 @@
 # Home Assistant best practice for custom integrations
 
 Based on the Home Assistant developer docs
-(<https://contributors.home-assistant.io>) and the Integration Quality Scale
-(<https://contributors.home-assistant.io/core/quality-scale/>).
+(<https://contributors.home-assistant.io>), the Integration Quality Scale
+(<https://contributors.home-assistant.io/core/quality-scale/>) and the rules
+core gives its own AI agents (`AGENTS.md` and the `ha-integration-knowledge`
+skill in <https://github.com/home-assistant/core>, as of November 2026),
+adapted where a custom integration differs.
 The quality scale is written for core integrations, and custom integrations
 cannot declare a tier in their manifest, but its rules are the best available
 definition of "done properly". Aim for Bronze as the floor and Silver as the
@@ -18,6 +21,7 @@ target; Gold items are listed for completeness.
 - [Entities](#entities)
 - [Devices](#devices)
 - [Services (actions)](#services-actions)
+- [Exceptions and validation](#exceptions-and-validation)
 - [Translations](#translations)
 - [Security and good citizenship](#security-and-good-citizenship)
 - [Bundled frontend code](#bundled-frontend-code)
@@ -49,6 +53,15 @@ Protocol and API code belongs in a separate library on PyPI, listed in
 `requirements` and pinned. The integration is glue: it maps library objects to
 Home Assistant entities. The blueprint keeps a small `api.py` in-tree, which
 is fine for a thin HTTP wrapper but should move to a library as it grows.
+Protocol parsing and device state machines are library code; if unsure
+whether something belongs in the integration, ask the user before inlining
+it. Do not work around a library's bug or limitation in the integration: fix
+the library and bump the requirement.
+
+A constant used by more than one module goes in `const.py`; one used by a
+single module stays in that module (tests do not count as a user). That
+includes entity descriptions and service schemas. Never import a constant
+from one platform module into another.
 
 ## Setup and teardown
 
@@ -91,7 +104,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: AwesomeConfigEntry) -> 
   new integrations.
 - Validate input by actually connecting before `async_create_entry`. Map
   failures to `errors["base"]` keys (`cannot_connect`, `invalid_auth`,
-  `unknown`) that exist in the translations.
+  `unknown`) that exist in the translations. Do not log the known failures.
+  Catch anything unexpected, log it with `_LOGGER.exception()` and map it to
+  `unknown`. Do not mix translated and untranslated text in an error shown
+  to the user.
 - Set a unique ID from something stable (serial number, MAC, account ID) with
   `await self.async_set_unique_id(...)` then
   `self._abort_if_unique_id_configured()`. Never use a name, IP, hostname or a
@@ -161,7 +177,9 @@ integration.
   (`UpdateFailed(retry_after=...)`).
 - Push sources: subscribe in `async_added_to_hass`, unsubscribe via
   `self.async_on_remove(...)`, and call `async_write_ha_state()` on updates.
-  Set `_attr_should_poll = False`.
+  Set `_attr_should_poll = False`. Keep `async_added_to_hass` and
+  `async_will_remove_from_hass` symmetrical: whatever one sets up the other
+  tears down, and nothing is torn down that was not set up there.
 - Set `PARALLEL_UPDATES` in each platform module (`0` for coordinator-backed
   read-only platforms, `1` for devices that cannot handle concurrent
   commands).
@@ -199,6 +217,17 @@ class AwesomeSensor(AwesomeEntity, SensorEntity):
   used ones.
 - `available` must go false when the device is unreachable
   (`CoordinatorEntity` handles coordinator failure; add device-level checks).
+  When overriding it, combine with the parent:
+  `return super().available and ...`.
+- Use `_attr_*` attributes rather than properties for values that never
+  change. Make them class attributes only when every instance shares the
+  value; otherwise set them in `__init__`.
+- The platform base class (`SensorEntity`, `TrackerEntity`, …) is a stable
+  API. Do not redeclare attributes, properties or methods it already
+  provides, and do not guard against its behaviour changing.
+- Do not add entities for data Home Assistant deliberately exposes only
+  through an action, for example weather forecasts
+  (`weather.get_forecasts`).
 - Keep `extra_state_attributes` small and stable. Anything worth graphing or
   automating on is its own entity. Never put large or constantly changing
   blobs in attributes.
@@ -234,6 +263,37 @@ class AwesomeSensor(AwesomeEntity, SensorEntity):
   services that take an entity ID string.
 - Raise `ServiceValidationError` / `HomeAssistantError` with translated
   messages.
+- For an integration's first actions, define the action names and fields as
+  `StrEnum`s named `<Prefix>Service` and `<Prefix>ServiceArgument` (the
+  integration's usual class prefix, e.g. `AwesomeService`), in `services.py`,
+  or in `const.py` when other modules need them. Use the members for
+  registration, schema keys and `call.data` lookups instead of raw strings.
+  Members match what `services.yaml` lists, no more. Shared selector fields
+  (`config_entry_id`, `device_id`, `entity_id`) keep using the
+  `homeassistant.const` constants. This is the convention for new work, not
+  a reason to rewrite an integration that already has actions.
+- Actions that change configuration or have security implications require
+  an admin user: register them with
+  `homeassistant.helpers.service.async_register_admin_service`.
+
+## Exceptions and validation
+
+- Keep `try` blocks as small as possible: wrap the call that can raise, not
+  the whole function, and do not catch exceptions from code that is not
+  expected to raise them.
+- Do not pass the original exception text (`str(err)`) as a placeholder of a
+  translated exception (`HomeAssistantError`, `ServiceValidationError`,
+  `ConfigEntryNotReady`, `UpdateFailed`). It mixes untranslated text into a
+  translated message, and Home Assistant already logs these. Raise more
+  specific, translatable errors from one central handler (a decorator or
+  helper method).
+- Trust validation. When a schema guarantees a key is present, index it
+  directly (`data["key"]`), not `.get("key")`, so a broken assumption fails
+  loudly. Do not add defensive checks for action fields the schema and
+  entity filters already enforce; add guards only where a value bypasses
+  validation or is transformed unsafely.
+- An `assert` that exists only to narrow a type for the type checker goes
+  behind `if TYPE_CHECKING:` so it does not run.
 
 ## Translations
 
@@ -297,7 +357,13 @@ panel in the repository root (`www/`, `dist/`) is never delivered.
   unavailable and one when it returns, not one per poll.
 - Lazy formatting: `_LOGGER.debug("Got %s", value)`. No `print`.
 - Use repair issues (`ir.async_create_issue`) for problems the user must act
-  on, not persistent notifications or log spam.
+  on, not persistent notifications or log spam. Only raise one for something
+  the user can resolve. The issue text says what the problem is, why it
+  matters, the exact steps to fix it (numbered when there are several; not
+  just "update firmware") and what to expect afterwards, with context such
+  as the device name. Severity: `WARNING` for something that will break
+  later, `ERROR` for something needing attention now, `CRITICAL` only for
+  extreme cases.
 
 ## Tests and tooling
 
@@ -305,6 +371,27 @@ panel in the repository root (`www/`, `dist/`) is never delivered.
   (`hass`, `MockConfigEntry`, `enable_custom_integrations`). Minimum useful
   suite: config flow success, each error path, duplicate abort, and setup /
   unload of the entry. Mock the library, not Home Assistant.
+- Test through Home Assistant: set up the config entry, then assert on
+  states, registries and service calls. Do not call or mock the
+  integration's own internals
+  (<https://contributors.home-assistant.io/core/development/tests/#test-through-home-assistant>).
+- Shared mocks are fixtures in `conftest.py`, including a
+  `mock_config_entry` (with a `unique_id` when the integration's entries
+  have one), so every platform test reuses them.
+- Load substantial or reused mock API data from JSON files in
+  `tests/fixtures/` with `load_json_object_fixture` /
+  `load_json_array_fixture` (from
+  `pytest_homeassistant_custom_component.common`) instead of building it
+  inline.
+- Use snapshot tests (syrupy's `snapshot` fixture) for entity states and
+  diagnostics, and do not also assert by hand what a snapshot covers.
+- Patch objects where they are used, not where they are defined.
+- To give one test different mock data, parametrize the fixture that
+  provides it (`pytest.mark.parametrize(..., indirect=True)` when it reads
+  `request.param`) rather than patching again inside the test. Merge
+  near-identical tests with `parametrize` and avoid branching in a test.
+- Use `Platform` members and `ATTR_*` constants in tests where they exist,
+  not string literals. Annotate test function parameters.
 - `ruff check` and `ruff format` (the blueprint ships a config).
 - Type hints throughout; `mypy --strict` if you want the Platinum bar.
 - CI: lint, tests, hassfest and HACS action on push, PR and a nightly
@@ -377,4 +464,5 @@ Platinum: fully async dependency, injected web session, strict typing.
 | `hass.loop.create_task`, `asyncio.get_event_loop()` | `hass.async_create_task`, `entry.async_create_background_task` |
 | `async_timeout.timeout` | `asyncio.timeout` |
 | `strings.json` only | `translations/en.json` |
+| Legacy device tracker (`get_scanner`, `async_setup_scanner`, `DeviceScanner`, `see` / `async_see`, `known_devices.yaml`) | config entry with `ScannerEntity` / `TrackerEntity`; removed in HA 2027.5. Do not import the YAML, read or edit `known_devices.yaml`, or reuse the old entity IDs; tell users to remove the platform and their `known_devices.yaml` entries, restart, then set up from the UI |
 | brand images only in `home-assistant/brands` | `custom_components/<domain>/brand/` (HA 2026.3+) |
