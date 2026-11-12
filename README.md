@@ -116,8 +116,14 @@ On Claude Code older than 2.1.275, use two steps instead:
 ```
 
 Installed this way, the command is `/marketplace-skills:marketplace-integration`
-(plugin name, then skill name). To update later, run
-`/plugin marketplace update home-assistant-marketplace-skills` followed by
+(plugin name, then skill name).
+
+To get new versions automatically, run `/plugin`, open **Marketplaces**,
+select `home-assistant-marketplace-skills` and choose **Enable auto-update**.
+Claude Code then checks for a new version when it starts. This is off by
+default for marketplaces that are not Anthropic's own. To update by hand
+instead, run `/plugin marketplace update home-assistant-marketplace-skills`
+followed by
 `/plugin update marketplace-skills@home-assistant-marketplace-skills`.
 
 ### Check it worked
@@ -230,6 +236,7 @@ blocking problem was found, so it can be used in CI.
 | `skills/marketplace-integration/scripts/preflight.py` | The offline checker |
 | `.claude-plugin/` | Plugin and marketplace manifests for the one-line install |
 | `tests/` | Tests for the checker and the skill's structure, run by CI |
+| `CHANGELOG.md` | What changed in each version |
 
 ## Keeping it current
 
@@ -245,6 +252,13 @@ references were written in November 2026 from:
 - pull requests in <https://github.com/hacs/default>
 
 If the skill and the live documentation disagree, the documentation wins.
+
+Each version is listed in [CHANGELOG.md](CHANGELOG.md) and published as a
+[release](https://github.com/Jam3s97/home-assistant-marketplace-skills/releases).
+To be emailed about new versions, click **Watch** on the repository, then
+**Custom** and tick **Releases**. A plugin install can update itself (see
+[As a plugin](#as-a-plugin-terminal-only)); a copied folder or an uploaded
+zip has to be replaced by hand.
 Issues and pull requests are welcome.
 
 ⭐ If you find this useful, please give the repo a star.
