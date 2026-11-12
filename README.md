@@ -139,13 +139,6 @@ cp -r skills/marketplace-integration ~/.claude/skills/
 Deleting the old copy first matters: a plain copy leaves behind files that a
 new version removed.
 
-**Coming from `hacs-integration`?** The skill was renamed. Delete the old
-folder (`rm -rf ~/.claude/skills/hacs-integration`), then install as above.
-The command is now `/marketplace-integration`. The old repository address
-redirects, but `git remote set-url origin
-https://github.com/Jam3s97/home-assistant-marketplace-skills` keeps your clone
-tidy.
-
 ### Other tools
 
 - **Claude desktop or claude.ai app:** zip the `skills/marketplace-integration`
