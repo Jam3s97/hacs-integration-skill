@@ -107,8 +107,24 @@ and why; do not leave it for the user to discover.
    advice. A custom repository is still fine for personal use.
 2. Ask for (or infer) the display name, the **domain** (lowercase,
    underscores, must not match any Home Assistant core integration), what
-   device or service it talks to, local or cloud, polling or push, and the
-   owner's GitHub handle.
+   device or service it talks to, and the owner's GitHub handle. Then work
+   out the integration's type before writing code, because it decides the
+   manifest, the config flow and how data is fetched:
+
+   | Question | Answer decides |
+   | --- | --- |
+   | Local device or cloud service? | `iot_class` prefix; discovery is possible only for local |
+   | Polls, or the source pushes updates (websocket, MQTT, webhook, BLE advertisements)? | `iot_class` suffix; a `DataUpdateCoordinator`, or push callbacks with `should_poll = False` |
+   | How does the user sign in: none, host only, API key or password, OAuth 2.0? | config flow steps; OAuth needs application credentials |
+   | Bluetooth? | the Bluetooth coordinators and manifest matchers |
+   | Found on the network (zeroconf, DHCP, SSDP, USB, Bluetooth)? | discovery steps and manifest matchers |
+   | One device, a hub with several devices, or a service with no device? | `integration_type` (`device`, `hub`, `service`) and `DeviceInfo` |
+   | Several user-chosen items under one account (locations, rooms)? | config subentries |
+
+   Ask about anything the user has not said and cannot be inferred. Read
+   the matching sections of
+   [references/ha-best-practices.md](references/ha-best-practices.md)
+   (OAuth 2.0 accounts, Config subentries, Bluetooth devices) before step 6.
 3. Get the template, according to what the working directory holds:
    - Already contains the blueprint (`custom_components/integration_blueprint`
      exists): skip to the next step.
@@ -195,6 +211,29 @@ writing or changing integration code. The non-negotiables:
 Follow the blueprint's file split (`api.py`, `coordinator.py`, `data.py`,
 `entity.py`, one file per platform) unless the repo already has its own
 convention.
+
+**Before calling a change done**, go through this list against the files
+you touched and fix or report anything that fails:
+
+- [ ] No blocking I/O on the event loop; nothing new from the "Outdated
+      patterns" table in the best-practices reference.
+- [ ] Timestamps come from `homeassistant.util.dt` (`dt_util.utcnow()`,
+      `dt_util.now()`), not `datetime.now()`, and are timezone-aware.
+- [ ] State attributes and service responses are JSON-serialisable: no
+      `datetime`, dataclass or library objects.
+- [ ] Every new entity has a stable `unique_id`, a `translation_key` (or
+      `_attr_name = None`) and is attached to a device.
+- [ ] Every new config-flow step, error, abort, entity name, exception and
+      service has its string in `translations/en.json`.
+- [ ] Credentials and tokens are not logged and are redacted in diagnostics.
+- [ ] Anything set up in setup or `async_added_to_hass` is undone on unload
+      or removal.
+- [ ] New dependencies are pinned in `requirements`; new core components
+      used are in `dependencies` or `after_dependencies`.
+- [ ] `scripts/lint` (or `ruff check` and `ruff format`) and the tests pass;
+      the pre-flight script reports no new errors.
+- [ ] You have told the user what still needs testing against the real
+      device or service.
 
 ## Review
 
