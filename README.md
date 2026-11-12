@@ -53,17 +53,19 @@ Please read and test what it produces before you release it.
 
 Which way to install depends on where you use Claude. The `/plugin` command
 only exists in the terminal version of Claude Code; elsewhere it replies
-"Plugins aren't available in this environment".
+"Plugins aren't available in this environment". The Claude desktop app and
+claude.ai have their own plugin screen in Settings instead.
 
 | Where you use Claude | How to install |
 | --- | --- |
 | Claude Code in VS Code | [Copy the folder](#by-copying-the-folder) |
 | Claude Code in a terminal | [Copy the folder](#by-copying-the-folder), or [the plugin command](#as-a-plugin-terminal-only) |
 | Claude Code on the web | [Add it to your repository](#for-one-integrations-repository-only) |
-| Claude desktop or claude.ai app | [Upload a zip](#other-tools) |
+| Claude desktop or claude.ai app | [Add the repository in Settings](#as-a-plugin-claude-desktop-and-claudeai) |
 
-The skill is not listed in the plugin store inside the Claude apps; that store
-only shows Anthropic's own directory.
+The skill is not listed in the plugin store inside the Claude apps until you
+add this repository to it; out of the box that store only shows Anthropic's
+own directory.
 
 ### By copying the folder
 
@@ -126,6 +128,19 @@ instead, run `/plugin marketplace update home-assistant-marketplace-skills`
 followed by
 `/plugin update marketplace-skills@home-assistant-marketplace-skills`.
 
+### As a plugin (Claude desktop and claude.ai)
+
+1. Open **Settings → Customize → Plugins**.
+2. Click **Add**, and in the **Add marketplace** window choose
+   **Add from a repository**.
+3. Enter `Jam3s97/home-assistant-marketplace-skills`, or the full address
+   `https://github.com/Jam3s97/home-assistant-marketplace-skills`.
+4. Add the `marketplace-skills` plugin, which now appears in the list.
+
+The pre-flight script needs code execution to be enabled. If your plan or
+organization does not show the Plugins tab, upload the skill as a zip instead;
+see [Other tools](#other-tools).
+
 ### Check it worked
 
 Start a **new** Claude Code chat (a chat that was already open will not see
@@ -147,9 +162,10 @@ new version removed.
 
 ### Other tools
 
-- **Claude desktop or claude.ai app:** zip the `skills/marketplace-integration`
-  folder and upload it under Settings → Capabilities → Skills. The pre-flight
-  script needs code execution to be enabled there.
+- **Claude desktop or claude.ai app, without the Plugins tab:** zip the
+  `skills/marketplace-integration` folder and upload it under
+  Settings → Customize → Skills. The pre-flight script needs code execution
+  to be enabled there.
 - **Other agents that support Agent Skills:** copy `skills/marketplace-integration`
   into that tool's skills directory.
 
