@@ -98,6 +98,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: AwesomeConfigEntry) -> 
   user-changeable username. If no stable ID exists, use
   `self._async_abort_entries_match({...})`. The blueprint's
   `slugify(username)` is marked "do NOT use this in production".
+- Only one instance makes sense (a public API with no account or host):
+  set `"single_config_entry": true` in `manifest.json`. Do not fake it with
+  `async_set_unique_id(DOMAIN)`.
 - Connection details and credentials go in `entry.data`; tunable behaviour
   (scan interval is discouraged, see below) in `entry.options` via an
   `OptionsFlow`.

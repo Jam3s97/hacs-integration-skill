@@ -1,6 +1,6 @@
 {
   "name": "hacs-integration",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Create, build and review Home Assistant custom integrations distributed through HACS, with a focus on quality and security.",
   "author": { "name": "Jam3s97", "url": "https://github.com/Jam3s97" },
   "homepage": "https://github.com/Jam3s97/hacs-integration-skill",
