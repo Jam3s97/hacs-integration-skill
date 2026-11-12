@@ -1,7 +1,8 @@
 # What gets hacs/default submissions closed or sent back
 
 Compiled in November 2026 from closed pull requests in
-<https://github.com/hacs/default>: search counts across the closed PRs, and a
+<https://github.com/hacs/default>, the catalog behind the Home Assistant
+Marketplace (formerly the HACS default store): search counts across the closed PRs, and a
 close reading of the maintainer and bot comments on 48 closed integration
 submissions from 2025–2026. Roughly one in four integration submissions closed since
 mid-2026 was closed unmerged, and many of those were resubmitted, which resets
@@ -233,7 +234,7 @@ release.
   The template warns the PR will be closed.
 - AI-written submissions the author has not reviewed or cannot explain.
   The Open Home Foundation AI policy
-  (<https://developers.home-assistant.io/docs/ai_policy>) allows AI as a
+  (<https://contributors.home-assistant.io/start/ai-policy/>) allows AI as a
   tool but requires a human who understands the work: PRs that look like
   unreviewed AI output or that bypass the template are closed, autonomous
   agents are not allowed, AI-generated replies to maintainers are not

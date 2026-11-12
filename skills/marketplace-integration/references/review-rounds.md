@@ -1,7 +1,7 @@
 # What reviewers ask for before merging
 
 Compiled in November 2026 from 32 integration submissions to
-<https://github.com/hacs/default> that **were merged** after one to five
+<https://github.com/hacs/default> (the Marketplace catalog) that **were merged** after one to five
 rounds of requested changes. Where
 `common-pr-feedback.md` lists what stops a submission, this file lists what a
 careful code review finds in integrations that were otherwise good enough to
@@ -348,7 +348,7 @@ Non-blocking but raised at approval in 9 of 32:
    skipping it silently.
 
 The reply must be the author's own. The Open Home Foundation AI policy
-(<https://developers.home-assistant.io/docs/ai_policy>) says: "Do not use AI
+(<https://contributors.home-assistant.io/start/ai-policy/>) says: "Do not use AI
 to generate answers to questions from maintainers. You should understand and
 be able to explain your own work." Using AI to improve the grammar or clarity
 of text the author wrote is allowed. An assistant's job at step 7 is to make

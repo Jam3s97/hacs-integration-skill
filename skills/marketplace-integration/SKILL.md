@@ -1,25 +1,41 @@
 ---
-name: hacs-integration
-description: Create, build and review Home Assistant custom integrations that are distributed through HACS, and prepare them for inclusion in the HACS default store (hacs/default). Use when the user wants to scaffold a new custom integration (custom_components), add or fix config flows, coordinators, entities, manifest.json, hacs.json, brand images, hassfest or HACS action workflows, review an integration against Home Assistant best practice, fix a failing HACS/hassfest check, or prepare for, or work through review feedback on, a pull request to hacs/default. Not for dashboards, cards, themes, AppDaemon or other HACS categories.
+name: marketplace-integration
+description: Create, build and review Home Assistant custom integrations published through the Home Assistant Marketplace (formerly HACS), and prepare them for the Marketplace catalog (the hacs/default repository, also known as the HACS default store). Use when the user wants to scaffold a new custom integration (custom_components), add or fix config flows, coordinators, entities, manifest.json, hacs.json, brand images, hassfest or HACS action workflows, review an integration against Home Assistant best practice, fix a failing HACS/hassfest check, or prepare for, or work through review feedback on, a pull request to hacs/default. Not for dashboards, cards, themes, templates or blueprints.
 ---
 
-# HACS integration skill
+# Marketplace integration skill
 
 Helps with the three stages of a Home Assistant custom integration: **create**
 (scaffold from the blueprint), **build** (write code the Home Assistant way),
 and **review** (find what will fail validation or be flagged before a
-maintainer does). Scope is HACS category `integration` only.
+maintainer does). Scope is the `integration` category only.
+
+**Naming.** From Home Assistant 2026.11, HACS is built in as the
+**Marketplace**. It is the same system: the catalog is still the
+`hacs/default` repository, the manifest is still `hacs.json`, and the check is
+still the HACS action. Users may say "HACS", "the HACS default store" or "the
+Marketplace catalog" and mean the same thing. Use "Marketplace" when talking
+to the user, and keep the HACS names for the things still called that.
 
 Requirements move. HACS and Home Assistant change their rules several times a
 year, so when a reference file here disagrees with the live docs
-(<https://hacs.xyz/docs/publish/start>, <https://hacs.xyz/docs/publish/include>,
-<https://developers.home-assistant.io>), the live docs win; say so and follow
-them.
+(<https://contributors.home-assistant.io/marketplace/> for publishing,
+<https://contributors.home-assistant.io/core/integrations/> for building
+integrations, and the older <https://hacs.xyz/docs/publish/include> for the
+catalog checks), the live docs win; say so and follow them.
+
+Home Assistant core ships its own agent skills for integration code
+(`ha-integration-knowledge`, `ha-review`, in
+<https://github.com/home-assistant/core/tree/dev/.claude/skills>). They are
+written for core, but where they are available and differ from
+`references/ha-best-practices.md` on how integration code should be written,
+prefer them. This skill's own ground is what is different for a custom
+integration and what the catalog review asks for.
 
 ## The human stays in the loop
 
 Home Assistant and HACS are Open Home Foundation projects, and the
-foundation's AI policy (<https://developers.home-assistant.io/docs/ai_policy>)
+foundation's AI policy (<https://contributors.home-assistant.io/start/ai-policy/>)
 applies to what gets submitted to them. AI may be used as a tool; the person
 is responsible for the contribution and must understand it. In practice:
 
@@ -49,12 +65,12 @@ policy is and offer the allowed form of help.
 | Start a new integration | [Create](#create) |
 | Add features or fix code in an existing one | [Build](#build) |
 | Know whether it is good / ready, or why a check fails | [Review](#review) |
-| Get ready to be listed in the HACS default store | [Publish](#publish) |
+| Get ready to be listed in the Marketplace catalog | [Publish](#publish) |
 | Work through a maintainer's review on their hacs/default PR | [Respond to a review](#respond-to-a-review) |
 
 When invoked as a command, the first word of the argument selects the mode:
 `create`, `build`, `review`, `publish` or `respond` (for example
-`/hacs-integration review`). With no argument, or anything else, infer the
+`/marketplace-integration review`). With no argument, or anything else, infer the
 mode from the request; if the working directory already holds an integration
 and nothing else was asked, default to Review.
 
@@ -80,7 +96,7 @@ Do the steps in order. If you skip or change any step, say so at the time
 and why; do not leave it for the user to discover.
 
 1. Check it should exist. Search Home Assistant core
-   (<https://www.home-assistant.io/integrations/>) and the HACS store for the
+   (<https://www.home-assistant.io/integrations/>) and the Marketplace catalog for the
    same device, brand or API. Duplicates of core or of an existing default,
    and forks of them, are the most common reason maintainers decline a
    submission; contributing to the existing integration is the usual
@@ -114,8 +130,9 @@ and why; do not leave it for the user to discover.
    templates). Leftover template names are a common reason submissions are
    closed.
 5. Fix `manifest.json`: real `documentation` and `issue_tracker` URLs,
-   `codeowners`, correct `iot_class`, add `integration_type`, add
-   `requirements` (pinned `==`) for the client library. Keys ordered `domain`,
+   `codeowners`, correct `iot_class`, add `integration_type`, add one to
+   three `categories`, add `requirements` (pinned `==`) for the client
+   library, leaving out anything Home Assistant already requires. Keys ordered `domain`,
    `name`, then alphabetical.
 6. Replace the blueprint's sample API client, entities and the
    `unique_id=slugify(username)` placeholder with real ones (see Build).
@@ -183,7 +200,7 @@ Assistant best practice, user-visible bugs) and **Nice to have**. Give
 file:line and the concrete fix for each.
 
 1. Run the offline pre-flight:
-   `python3 <skill-dir>/scripts/hacs_preflight.py <repo-path>`.
+   `python3 <skill-dir>/scripts/preflight.py <repo-path>`.
    It covers repository layout, `hacs.json`, `manifest.json`, brand icon,
    translations, workflows, and a scan for common code smells. It cannot see
    GitHub-side settings, so check those by hand (step 3).
@@ -192,7 +209,7 @@ file:line and the concrete fix for each.
    script's pattern hits are leads, not verdicts; confirm each by reading the
    code.
 3. Check what only GitHub knows, using
-   [references/hacs-requirements.md](references/hacs-requirements.md):
+   [references/marketplace-requirements.md](references/marketplace-requirements.md):
    description, topics, issues enabled, licence detected, not archived, a
    full **release** (not just a tag) made *after* the last green workflow
    run, and both workflows green with no `ignore`.
@@ -209,13 +226,13 @@ Review the code as it is in the latest release tag, not only the working
 tree: that is what HACS validates and what maintainers read.
 
 If hassfest or the HACS action is failing, map the message to its fix with the
-table in `references/hacs-requirements.md` before changing anything.
+table in `references/marketplace-requirements.md` before changing anything.
 
 ## Publish
 
 Only when the Review is clean. The full procedure, the PR template and the
 rules that get PRs closed without comment are in
-[references/hacs-requirements.md](references/hacs-requirements.md#submitting-to-hacsdefault).
+[references/marketplace-requirements.md](references/marketplace-requirements.md#submitting-to-hacsdefault).
 In short:
 
 1. HACS action and hassfest both pass on the default branch with no `ignore`.

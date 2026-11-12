@@ -1,8 +1,8 @@
 # Home Assistant best practice for custom integrations
 
 Based on the Home Assistant developer docs
-(<https://developers.home-assistant.io>) and the Integration Quality Scale
-(<https://developers.home-assistant.io/docs/core/integration-quality-scale/>).
+(<https://contributors.home-assistant.io>) and the Integration Quality Scale
+(<https://contributors.home-assistant.io/core/quality-scale/>).
 The quality scale is written for core integrations, and custom integrations
 cannot declare a tier in their manifest, but its rules are the best available
 definition of "done properly". Aim for Bronze as the floor and Silver as the

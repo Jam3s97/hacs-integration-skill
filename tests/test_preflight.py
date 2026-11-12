@@ -1,4 +1,4 @@
-"""Tests for hacs_preflight.py and the skill's own structure. Standard library only."""
+"""Tests for preflight.py and the skill's own structure. Standard library only."""
 
 from __future__ import annotations
 
@@ -13,14 +13,15 @@ import zlib
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-SKILL = REPO / "skills" / "hacs-integration"
-SCRIPT = SKILL / "scripts" / "hacs_preflight.py"
+SKILL = REPO / "skills" / "marketplace-integration"
+SCRIPT = SKILL / "scripts" / "preflight.py"
 
 MIT = "MIT License\n\nCopyright (c) 2026 Example\n\n" + "Permission is hereby granted. " * 20
 
 MANIFEST = {
     "domain": "awesome",
     "name": "Awesome",
+    "categories": ["energy.ev_charging"],
     "codeowners": ["@example"],
     "config_flow": True,
     "documentation": "https://github.com/example/ha-awesome",
@@ -135,6 +136,18 @@ class PreflightTest(unittest.TestCase):
         data = {"version": "1.0.0", **MANIFEST}
         (self.integ / "manifest.json").write_text(json.dumps(data))
         self.assert_flags("ERROR", "then alphabetical")
+
+    def test_missing_categories(self) -> None:
+        self.manifest(categories=None)
+        self.assert_flags("INFO", "`categories`")
+
+    def test_too_many_categories(self) -> None:
+        self.manifest(categories=["a", "b", "c", "d"])
+        self.assert_flags("ERROR", "one to three")
+
+    def test_duplicate_categories(self) -> None:
+        self.manifest(categories=["lighting", "lighting"])
+        self.assert_flags("ERROR", "one to three")
 
     def test_unpinned_requirement(self) -> None:
         self.manifest(requirements=["awesome-client>=1.0.0"])

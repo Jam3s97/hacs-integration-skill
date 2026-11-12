@@ -1,10 +1,10 @@
 {
-  "name": "hacs-integration",
-  "version": "0.1.2",
-  "description": "Create, build and review Home Assistant custom integrations distributed through HACS, with a focus on quality and security.",
+  "name": "marketplace-skills",
+  "version": "0.2.0",
+  "description": "Unofficial skills for publishing to the Home Assistant Marketplace (formerly HACS). Create, build and review custom integrations, with a focus on quality and security.",
   "author": { "name": "Jam3s97", "url": "https://github.com/Jam3s97" },
-  "homepage": "https://github.com/Jam3s97/hacs-integration-skill",
-  "repository": "https://github.com/Jam3s97/hacs-integration-skill",
+  "homepage": "https://github.com/Jam3s97/home-assistant-marketplace-skills",
+  "repository": "https://github.com/Jam3s97/home-assistant-marketplace-skills",
   "license": "MIT",
-  "keywords": ["home-assistant", "hacs", "custom-integration", "code-review"]
+  "keywords": ["home-assistant", "marketplace", "hacs", "custom-integration", "code-review"]
 }
