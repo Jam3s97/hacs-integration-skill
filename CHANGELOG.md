@@ -3,6 +3,20 @@
 Changes to the skill that users receive. The version is the one in
 `.claude-plugin/plugin.json`; plugin installs only update when it changes.
 
+## [0.2.3] - 2026-11-14
+
+### Added
+
+- Two code problems a Marketplace reviewer has flagged, in
+  `references/common-pr-feedback.md`, `references/ha-best-practices.md` and
+  the Build checklist:
+  - Options read once in `async_setup_entry` and reused later, so changes
+    do not apply until a reload. Read them when used, or reload the entry
+    from an update listener.
+  - Bulk enabling or unhiding of entities that also overrides entities the
+    user disabled or hid. Only touch entries whose `disabled_by` or
+    `hidden_by` is `INTEGRATION`.
+
 ## [0.2.2] - 2026-11-12
 
 ### Added

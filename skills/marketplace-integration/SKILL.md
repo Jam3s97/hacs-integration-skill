@@ -228,6 +228,11 @@ you touched and fix or report anything that fails:
 - [ ] Credentials and tokens are not logged and are redacted in diagnostics.
 - [ ] Anything set up in setup or `async_added_to_hass` is undone on unload
       or removal.
+- [ ] Options are read when they are used, or the entry reloads when they
+      change; none is captured once at setup and reused later.
+- [ ] Code that enables or unhides entities in bulk only touches entries
+      whose `disabled_by` / `hidden_by` is `INTEGRATION`, never ones the
+      user changed.
 - [ ] New dependencies are pinned in `requirements`; new core components
       used are in `dependencies` or `after_dependencies`.
 - [ ] `scripts/lint` (or `ruff check` and `ruff format`) and the tests pass;

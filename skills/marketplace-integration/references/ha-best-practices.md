@@ -124,6 +124,13 @@ async def async_unload_entry(hass: HomeAssistant, entry: AwesomeConfigEntry) -> 
 - Connection details and credentials go in `entry.data`; tunable behaviour
   (scan interval is discouraged, see below) in `entry.options` via an
   `OptionsFlow`.
+- Options must take effect the way the README says they do. Either read
+  `entry.options` (falling back to `entry.data`) at the point the value is
+  used, or register `entry.async_on_unload(entry.add_update_listener(...))`
+  and reload the entry when options change. A value read once in
+  `async_setup_entry` and kept in a closure or attribute goes stale: later
+  callbacks, such as adding newly discovered devices, keep using the old
+  value until a restart or reload.
 - Use selectors (`TextSelector(type=PASSWORD)`, `NumberSelector`, …).
   Passwords, tokens and API keys must use a password-type field.
 - Add `async_step_reauth` / `async_step_reauth_confirm` when credentials can
@@ -352,6 +359,12 @@ class AwesomeSensor(AwesomeEntity, SensorEntity):
 - `supported_features` lists only features whose methods are implemented,
   and command methods cope with optional arguments being absent.
 - Expose only controls verified against real hardware.
+- Respect the user's choices in the entity registry. When the integration
+  enables, disables, shows or hides its own entities in bulk, only change
+  entries it set itself: re-enable only where `disabled_by is
+  er.RegistryEntryDisabler.INTEGRATION` and unhide only where `hidden_by is
+  er.RegistryEntryHider.INTEGRATION`. Entries with `USER` (or any other
+  disabler) stay as the user left them.
 - Do not set `entity_id` by hand and do not hardcode `icon` when a device
   class already provides one; other icons go in `icons.json`.
 
