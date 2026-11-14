@@ -151,6 +151,19 @@ release.
   `entry.options` while setup reads only `entry.data`, so changes never
   apply. Read options first with a fallback to data, or update
   `entry.data` via a reconfigure flow.
+- **Options read once at setup**: an option captured in
+  `async_setup_entry` and reused by later callbacks (for example when
+  newly discovered devices are added), so changing it in Configure or
+  from a switch does nothing until a reload, while the README says it
+  applies immediately. "Please read `entry.options` (falling back to
+  `entry.data`) inside [the callback] each time it runs." Alternatively,
+  reload the entry from an update listener, and make the README match
+  what the code does.
+- **Overriding the user's registry choices**: a switch or option that
+  re-enables or unhides all of the integration's entities, including ones
+  the user disabled or hid themselves. "Please only enable entities where
+  `disabled_by is er.RegistryEntryDisabler.INTEGRATION`." The same applies
+  to `hidden_by` and `er.RegistryEntryHider.INTEGRATION`.
 - **Advertised features without an implementation**:
   `CoverEntityFeature.SET_POSITION` with no `async_set_cover_position`. Only set feature flags for methods that exist.
 - **Unhandled `None`**: `async_turn_on` without `rgb_color` passing `None`
