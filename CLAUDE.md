@@ -10,6 +10,13 @@ python -m unittest discover -s tests -v
 ruff check .
 ```
 
+## Research log
+
+`RESEARCH.md` records which hacs/default pull requests and which
+documentation the reference files were built from, and the date each was last
+read. Before reviewing more hacs/default pull requests, read it and start
+after its cutoff. After a refresh, update it in the same pull request.
+
 ## Versioning
 
 Plugin installs only pick up a change when `version` in
